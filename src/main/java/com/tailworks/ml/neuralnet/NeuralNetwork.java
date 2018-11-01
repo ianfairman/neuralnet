@@ -94,7 +94,7 @@ public class NeuralNetwork {
         for (Layer l : layers)
             if (notFirstLayer(l)) {
                 l.getWeights().subtract(deltaWeights.get(cnt).scale(learningRate));
-                if(l.hasBias()) {
+                if (l.hasBias()) {
                     Vec newBias = l.getBias().subtract(deltaBias.get(cnt).scale(learningRate));
                     l.setBias(newBias);
                 }
