@@ -101,6 +101,8 @@ public class NeuralNetwork {
                 cnt++;
             }
 
+        deltaWeights.clear();
+        deltaBias.clear();
     }
 
     private boolean notFirstLayer(Layer layer) {
