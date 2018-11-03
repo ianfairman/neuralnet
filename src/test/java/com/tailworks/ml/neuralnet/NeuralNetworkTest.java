@@ -3,6 +3,8 @@ package com.tailworks.ml.neuralnet;
 import com.tailworks.ml.neuralnet.math.Vec;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static java.lang.System.arraycopy;
 import static org.junit.Assert.assertEquals;
 
@@ -155,5 +157,19 @@ public class NeuralNetworkTest {
             int ix = result.getOutput().indexOfLargestElement();
             assertEquals(new Vec(trainOutput[i]), new Vec(trainOutput[ix]));
         }
+    }
+
+    @Test
+    public void testToJson() {
+        NeuralNetwork n1 =
+                new NeuralNetwork.Builder(4)
+                        .addLayer(new Layer(6, Activation.LogSigmoid, 0.5))
+                        .addLayer(new Layer(4, Activation.LogSigmoid, 0.5))
+                        .setLearningRate(0.5)
+                        .initWeights(new WeightInitializer.Random(-0.5, 0.5))
+                        .create();
+
+        String json = n1.toJson();
+        System.out.println("json = " + json);
     }
 }

@@ -101,4 +101,23 @@ public class Layer {
     public boolean hasBias() {
         return bias != null;
     }
+
+    public LayerState getState() {
+        return new LayerState(this);
+    }
+
+
+
+    public static class LayerState {
+
+        double[][] weights;
+        double[] bias;
+        String activation;
+
+        public LayerState(Layer layer) {
+            weights = layer.getWeights() != null ? layer.getWeights().getData() : null;
+            bias = layer.bias != null ? layer.getBias().getData() : null;
+            activation = layer.activation.getName();
+        }
+    }
 }

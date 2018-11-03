@@ -5,6 +5,7 @@ import com.tailworks.ml.neuralnet.math.Vec;
 // FIXME harmonise w Activation
 public interface CostFunction {
 
+    String getName();
     double getTotal(Vec wanted, Vec actual);
     Vec getDerivative(Vec wanted, Vec actual);
 
@@ -32,6 +33,11 @@ public interface CostFunction {
 
     // 0.5 * ∑(L−E)^2
     class Quadratic implements CostFunction {
+        @Override
+        public String getName() {
+            return "Quadratic";
+        }
+
         @Override
         public double getTotal(Vec wanted, Vec actual) {
             Vec diff = wanted.subtract(actual);

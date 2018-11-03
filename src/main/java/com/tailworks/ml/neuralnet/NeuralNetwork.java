@@ -1,5 +1,6 @@
 package com.tailworks.ml.neuralnet;
 
+import com.google.gson.Gson;
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
 import com.tailworks.ml.neuralnet.util.Util;
@@ -126,6 +127,12 @@ public class NeuralNetwork {
     }
 
 
+    public String toJson() {
+        return new Gson().toJson(new NetworkState(this));
+    }
+
+    // --------------------------------------------------------------------
+
     /**
      * Simple builder for a NeuralNetwork
      */
@@ -167,6 +174,24 @@ public class NeuralNetwork {
             return new NeuralNetwork(this);
         }
 
+    }
+
+    // -----------------------------
+
+    private static class NetworkState {
+        double learningRate;
+        String costFunction;
+        Layer.LayerState[] layers;
+
+        public NetworkState(NeuralNetwork network) {
+            learningRate = network.learningRate;
+            costFunction = network.costFunction.getName();
+
+            layers = new Layer.LayerState[network.layers.size()];
+            for (int l = 0; l < network.layers.size(); l++) {
+                layers[l] = network.layers.get(l).getState();
+            }
+        }
     }
 }
 
