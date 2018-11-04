@@ -55,4 +55,31 @@ public class MatrixTest {
         assertEquals(8, R.getData()[0][1], 0.1);
         assertEquals(11, R.getData()[1][1], 0.1);
     }
+
+
+    @Test
+    public void testAverage() {
+        Matrix U = new Matrix(new double[][]{
+                {2, 3},
+                {3, 4}
+        });
+        Matrix V = new Matrix(new double[][]{
+                {4, 5},
+                {6, 7}
+        });
+
+        assertEquals(3, U.average(), 0.1);
+        assertEquals(5.5, V.average(), 0.1);
+    }
+
+    @Test
+    public void testVariance() {
+        Matrix U = new Matrix(new double[][]{
+                {11, 3},
+                {3, 7}
+        });
+        //noinspection IntegerDivisionInFloatingPointContext,PointlessArithmeticExpression
+        assertEquals(((11-6)*(11-6) + (6-3)*(6-3) + (6-3)*(6-3) + (7-6)*(7-6)) / 4, U.variance(), 0.1);
+    }
+
 }

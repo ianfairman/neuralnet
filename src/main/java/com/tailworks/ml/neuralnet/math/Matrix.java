@@ -1,7 +1,10 @@
 package com.tailworks.ml.neuralnet.math;
 
 
+import java.util.Arrays;
+
 import static java.lang.String.format;
+import static java.util.Arrays.stream;
 
 /**
  * Careful: not immutable
@@ -82,6 +85,16 @@ public class Matrix {
                 data[y][x] -= other.data[y][x];
 
         return this;
+    }
+
+
+    public double average() {
+        return stream(data).flatMapToDouble(Arrays::stream).average().getAsDouble();
+    }
+
+    public double variance() {
+        double avg = average();
+        return stream(data).flatMapToDouble(Arrays::stream).map(a -> (a - avg) * (a - avg)).average().getAsDouble();
     }
 
 }

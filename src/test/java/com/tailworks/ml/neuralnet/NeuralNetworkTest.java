@@ -3,8 +3,7 @@ package com.tailworks.ml.neuralnet;
 import com.tailworks.ml.neuralnet.math.Vec;
 import org.junit.Test;
 
-import java.io.IOException;
-
+import static com.tailworks.ml.neuralnet.Activation.*;
 import static java.lang.System.arraycopy;
 import static org.junit.Assert.assertEquals;
 
@@ -23,9 +22,9 @@ public class NeuralNetworkTest {
 
         NeuralNetwork network =
                 new NeuralNetwork.Builder(3)
-                        .addLayer(new Layer(3, Activation.ReLU, 1))
-                        .addLayer(new Layer(3, Activation.LogSigmoid, 1))
-                        .addLayer(new Layer(3, Activation.Softmax_broken, 1))
+                        .addLayer(new Layer(3, ReLU, 1))
+                        .addLayer(new Layer(3, LogSigmoid, 1))
+                        .addLayer(new Layer(3, Softmax_broken, 1))
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
                             for (int row = 0; row < data.length; row++)
@@ -52,8 +51,8 @@ public class NeuralNetworkTest {
 
         NeuralNetwork network =
                 new NeuralNetwork.Builder(2)
-                        .addLayer(new Layer(2, Activation.LogSigmoid, new Vec(0.35, 0.35)))
-                        .addLayer(new Layer(2, Activation.LogSigmoid, new Vec(0.60, 0.60)))
+                        .addLayer(new Layer(2, LogSigmoid, new Vec(0.35, 0.35)))
+                        .addLayer(new Layer(2, LogSigmoid, new Vec(0.60, 0.60)))
                         .setLearningRate(0.5)
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
@@ -101,10 +100,10 @@ public class NeuralNetworkTest {
 
         NeuralNetwork network =
                 new NeuralNetwork.Builder(4)
-                        .addLayer(new Layer(6, Activation.LogSigmoid, 0.5))
-                        .addLayer(new Layer(14, Activation.LogSigmoid, 0.5))
+                        .addLayer(new Layer(6, LogSigmoid, 0.5))
+                        .addLayer(new Layer(14, LogSigmoid, 0.5))
                         .setLearningRate(0.5)
-                        .initWeights(new WeightInitializer.Random(-0.5, 0.5))
+                        .initWeights(new Initializer.HeNormal())
                         .create();
 
 
@@ -144,7 +143,7 @@ public class NeuralNetworkTest {
 
 
         int cnt = 0;
-        for (int i = 0; i < 4000; i++) {
+        for (int i = 0; i < 2800; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
             network.evaluate(input);
@@ -163,13 +162,12 @@ public class NeuralNetworkTest {
     public void testToJson() {
         NeuralNetwork n1 =
                 new NeuralNetwork.Builder(4)
-                        .addLayer(new Layer(6, Activation.LogSigmoid, 0.5))
-                        .addLayer(new Layer(4, Activation.LogSigmoid, 0.5))
+                        .addLayer(new Layer(6, LogSigmoid, 0.5))
+                        .addLayer(new Layer(4, LogSigmoid, 0.5))
                         .setLearningRate(0.5)
-                        .initWeights(new WeightInitializer.Random(-0.5, 0.5))
+                        .initWeights(new Initializer.Random(-0.5, 0.5))
                         .create();
 
         String json = n1.toJson();
-        System.out.println("json = " + json);
     }
 }

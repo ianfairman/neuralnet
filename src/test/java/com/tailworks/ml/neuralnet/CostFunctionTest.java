@@ -34,8 +34,6 @@ public class CostFunctionTest {
         CostFunction.Quadratic costFn = new CostFunction.Quadratic();
         double cost = costFn.getTotal(wanted, actual);
         assertEquals(0.298371109, cost, 0.01);
-
-
     }
 
 }

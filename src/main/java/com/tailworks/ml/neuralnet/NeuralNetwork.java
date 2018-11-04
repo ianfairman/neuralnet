@@ -31,7 +31,7 @@ public class NeuralNetwork {
         for (int i = 0; i < nb.layers.size(); i++) {
             Layer layer = nb.layers.get(i);
             Matrix w = new Matrix(layer.size(), precedingLayer.size());
-            nb.weightInitializer.initWeights(w, i);
+            nb.initializer.initWeights(w, i);
             layer.addWeights(w);
             layers.add(layer);
             layer.setPrecedingLayer(precedingLayer);
@@ -143,7 +143,7 @@ public class NeuralNetwork {
 
         // defaults:
         private double learningRate = 0.25;
-        private WeightInitializer weightInitializer = new WeightInitializer.Random(0.5, 2);
+        private Initializer initializer = new Initializer.Random(0.5, 2);
         private CostFunction costFunction = new CostFunction.Quadratic();
 
         public Builder(int networkInputSize) {
@@ -155,8 +155,8 @@ public class NeuralNetwork {
             return this;
         }
 
-        public Builder initWeights(WeightInitializer weightInitializer) {
-            this.weightInitializer = weightInitializer;
+        public Builder initWeights(Initializer initializer) {
+            this.initializer = initializer;
             return this;
         }
 
