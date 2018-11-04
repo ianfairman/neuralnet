@@ -143,7 +143,7 @@ public class NeuralNetworkTest {
 
 
         int cnt = 0;
-        for (int i = 0; i < 2800; i++) {
+        for (int i = 0; i < 2000; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
             network.evaluate(input);
