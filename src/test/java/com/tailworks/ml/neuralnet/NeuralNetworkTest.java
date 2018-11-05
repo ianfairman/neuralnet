@@ -63,7 +63,6 @@ public class NeuralNetworkTest {
                         .create();
 
 
-
         Vec wanted = new Vec(0.01, 0.99);
         Vec input = new Vec(0.05, 0.1);
 
@@ -156,6 +155,64 @@ public class NeuralNetworkTest {
             int ix = result.getOutput().indexOfLargestElement();
             assertEquals(new Vec(trainOutput[i]), new Vec(trainOutput[ix]));
         }
+    }
+
+    @Test
+    public void testDeterminism() {
+
+        NeuralNetwork n1 =
+                new NeuralNetwork.Builder(2)
+                        .addLayer(new Layer(2, ReLU, 0.5))
+                        .addLayer(new Layer(2, LogSigmoid, 0.5))
+                        .initWeights(new Initializer.XavierNormal())
+                        .create();
+
+        NeuralNetwork n2 =
+                new NeuralNetwork.Builder(2)
+                        .addLayer(new Layer(2, ReLU, 0.5))
+                        .addLayer(new Layer(2, LogSigmoid, 0.5))
+                        .initWeights(new Initializer.XavierNormal())
+                        .create();
+
+        Vec in = new Vec(0.1, 0.7);
+
+        Vec o1a = n1.evaluate(in).getOutput();
+        Vec o1b = n1.evaluate(in).getOutput();
+        n1.evaluate(in);
+        n1.evaluate(in);
+        n1.evaluate(in);
+        n1.evaluate(in);
+        Vec o2 = n2.evaluate(in).getOutput();
+
+        double eps = 0.00000001;
+
+        assertEquals(o1a.getData()[0], o1b.getData()[0], eps);
+        assertEquals(o1a.getData()[1], o1b.getData()[1], eps);
+
+        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
+        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+
+        Vec wanted = new Vec(0.2, 0.1);
+        n1.learn(wanted);
+        n2.learn(wanted);
+
+        o1a = n1.evaluate(in).getOutput();
+        o2 = n2.evaluate(in).getOutput();
+
+        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
+        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+
+        n1.learn(wanted);
+        n2.learn(wanted);
+        n1.learn(wanted);
+        n2.learn(wanted);
+
+        o1a = n1.evaluate(in).getOutput();
+        o2 = n2.evaluate(in).getOutput();
+
+        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
+        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+
     }
 
 }

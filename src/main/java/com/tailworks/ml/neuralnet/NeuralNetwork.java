@@ -68,8 +68,8 @@ public class NeuralNetwork {
         Layer layer = lastLayer;
 
         do {
-            Layer precedingLayer = layer.getPrecedingLayer();
             Vec out = layer.getOut();
+            Layer precedingLayer = layer.getPrecedingLayer();
 
             Vec dE_dO = layer == lastLayer ?        // Change of Error w.r.p change of output
                     costFunction.getDerivative(wanted, out) :
