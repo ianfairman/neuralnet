@@ -158,16 +158,4 @@ public class NeuralNetworkTest {
         }
     }
 
-    @Test
-    public void testToJson() {
-        NeuralNetwork n1 =
-                new NeuralNetwork.Builder(4)
-                        .addLayer(new Layer(6, LogSigmoid, 0.5))
-                        .addLayer(new Layer(4, LogSigmoid, 0.5))
-                        .setLearningRate(0.5)
-                        .initWeights(new Initializer.Random(-0.5, 0.5))
-                        .create();
-
-        String json = n1.toJson();
-    }
 }
