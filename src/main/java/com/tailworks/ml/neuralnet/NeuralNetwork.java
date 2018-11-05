@@ -99,10 +99,8 @@ public class NeuralNetwork {
         for (Layer l : layers)
             if (notFirstLayer(l)) {
                 l.getWeights().subtract(deltaWeights.get(cnt).scale(learningRate));
-                if (l.hasBias()) {
-                    Vec newBias = l.getBias().subtract(deltaBias.get(cnt).scale(learningRate));
-                    l.setBias(newBias);
-                }
+                Vec newBias = l.getBias().subtract(deltaBias.get(cnt).scale(learningRate));
+                l.setBias(newBias);
                 cnt++;
             }
 
@@ -123,7 +121,7 @@ public class NeuralNetwork {
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .registerTypeAdapter(Double.class,
                         (JsonSerializer<Double>) (src, typeOfSrc, context) ->
-                                new JsonPrimitive((float) src.doubleValue())
+                                new JsonPrimitive((double) src.doubleValue())
                 );
         if (pretty) gsonBuilder.setPrettyPrinting();
         return gsonBuilder.create().toJson(new NetworkState(this));

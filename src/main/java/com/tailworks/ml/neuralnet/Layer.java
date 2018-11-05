@@ -17,10 +17,7 @@ public class Layer {
     private Vec backpropError;
 
     public Layer(int size, Activation activation) {
-        this.size = size;
-        inData = new Vec(size);
-        outData = new Vec(size);
-        this.activation = activation;
+        this (size, activation, 0);
     }
 
     public Layer(int size, Activation activation, double initialBias) {
@@ -49,7 +46,7 @@ public class Layer {
         if (in.dimension() != inData.dimension()) throw new IllegalArgumentException();
         System.arraycopy(in.getData(), 0, inData.getData(), 0, inData.getData().length);
 
-        outData = activation.fn(bias != null ? inData.add(bias) : inData);
+        outData = activation.fn(inData.add(bias));
         return this;
     }
 
@@ -98,10 +95,6 @@ public class Layer {
         this.bias = bias;
     }
 
-    public boolean hasBias() {
-        return bias != null;
-    }
-
     public LayerState getState() {
         return new LayerState(this);
     }
@@ -116,7 +109,7 @@ public class Layer {
 
         public LayerState(Layer layer) {
             weights = layer.getWeights() != null ? layer.getWeights().getData() : null;
-            bias = layer.bias != null ? layer.getBias().getData() : null;
+            bias = layer.getBias().getData();
             activation = layer.activation.getName();
         }
     }
