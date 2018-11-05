@@ -139,8 +139,8 @@ public class NeuralNetwork {
         private int networkInputSize;
 
         // defaults:
-        private double learningRate = 0.25;
-        private Initializer initializer = new Initializer.Random(0.5, 2);
+        private double learningRate = 0.005;
+        private Initializer initializer = new Initializer.Random(-0.5, 0.5);
         private CostFunction costFunction = new CostFunction.Quadratic();
 
         public Builder(int networkInputSize) {
