@@ -2,7 +2,6 @@ package com.tailworks.ml.neuralnet.math;
 
 import org.junit.Test;
 
-import static java.lang.Math.max;
 import static org.junit.Assert.assertEquals;
 
 public class VecTest {
@@ -15,17 +14,6 @@ public class VecTest {
         assertEquals(u.dot(v), 10, 0.01);
     }
 
-
-    @Test
-    public void sanityTestEvalutionOrder() {
-        Vec a = new Vec(1, 2);
-        Vec b = new Vec(2, 3);
-        Vec c = new Vec(-1, 4);
-
-        Vec result = a.subtract(b).elementProduct(c.map(x -> max(0, x)));
-        assertEquals(result.getData()[0], 0, 0.001);  // (1-2) * 0
-        assertEquals(result.getData()[1], -4, 0.001);  // (2-3) * 4
-    }
 
     @Test
     public void test_cMultiply() {
@@ -44,35 +32,17 @@ public class VecTest {
     }
 
     @Test
-    public void test_crossMultiply1() {
-        Vec a = new Vec(1, 2);
+    public void test_multiply() {
+        Vec v = new Vec(1, 2);  // 1x2
+        Matrix m = new Matrix(new double[][]{{2, 1, 3}, {3, 4, -1}});  // 2x3
+        Vec res = v.multiply(m);
 
-        Matrix m = new Matrix(new double[][]{{-1, 4}, {3, -7}});
-        Matrix result = a.columnMultiply(m);
-
-        assertEquals(result.numberOfCols(), 2);
-        assertEquals(result.numberOfRows(), 2);
-
-        double[][] data = result.getData();
-        assertEquals(data[0][0], -1, 0.01);
-        assertEquals(data[0][1], 4, 0.01);
-        assertEquals(data[1][0], 6, 0.01);
-        assertEquals(data[1][1], -14, 0.01);
+        assertEquals(res.dimension(), 3);
+        assertEquals(res.getData()[0], 8, 0.001);
+        assertEquals(res.getData()[1], 9, 0.001);
+        assertEquals(res.getData()[2], 1, 0.001);
     }
 
-    @Test
-    public void test_crossMultiply2() {
-        Vec a = new Vec(.13849856162855698, -0.03809823651655623);
-
-        Matrix m = new Matrix(new double[][]{{0.40, 0.45}, {0.50, 0.55}});
-        Matrix result = a.columnMultiply(m);
-
-        double[][] data = result.getData();
-        assertEquals(data[0][0], 0.05539942465142279, 0.01);
-        assertEquals(data[0][1], 0.06232435273285064, 0.01);
-        assertEquals(data[1][0], -0.019049118258278114, 0.01);
-        assertEquals(data[1][1], -0.02095403008410593, 0.01);
-    }
 
     @Test
     public void sub() {

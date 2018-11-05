@@ -7,7 +7,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
 /**
- * Careful: not immutable
+ * Careful: not immutable   TODO: consider fixing
  */
 public class Matrix {
 
@@ -40,19 +40,6 @@ public class Matrix {
         return this;
     }
 
-    public Matrix scale(double s) {
-        return map(value -> s * value);
-    }
-
-    public Matrix transpose() {
-        double[][] result = new double[cols][rows];
-        for (int y = 0; y < rows; y++)
-            for (int x = 0; x < cols; x++)
-                result[x][y] = data[y][x];
-
-        return new Matrix(result);
-    }
-
     public int numberOfRows() {
         return rows;
     }
@@ -61,24 +48,16 @@ public class Matrix {
         return cols;
     }
 
+    public Matrix scale(double s) {
+        return map(value -> s * value);
+    }
+
     public double[][] getData() {
         return data;
     }
 
-    public Matrix add(Matrix other) {
-        if (rows != other.rows || cols != other.cols)
-            throw new IllegalArgumentException(format("Matrix of different dim: Input is %d x %d, Vec is %d x %d", rows, cols, other.rows, other.cols));
-
-        for (int y = 0; y < rows; y++)
-            for (int x = 0; x < cols; x++)
-                data[y][x] += other.data[y][x];
-
-        return this;
-    }
-
     public Matrix subtract(Matrix other) {
-        if (rows != other.rows || cols != other.cols)
-            throw new IllegalArgumentException(format("Matrix of different dim: Input is %d x %d, Vec is %d x %d", rows, cols, other.rows, other.cols));
+        assertCorrectDimension(other);
 
         for (int y = 0; y < rows; y++)
             for (int x = 0; x < cols; x++)
@@ -86,7 +65,6 @@ public class Matrix {
 
         return this;
     }
-
 
     public double average() {
         return stream(data).flatMapToDouble(Arrays::stream).average().getAsDouble();
@@ -97,5 +75,10 @@ public class Matrix {
         return stream(data).flatMapToDouble(Arrays::stream).map(a -> (a - avg) * (a - avg)).average().getAsDouble();
     }
 
+
+    private void assertCorrectDimension(Matrix other) {
+        if (rows != other.rows || cols != other.cols)
+            throw new IllegalArgumentException(format("Matrix of different dim: Input is %d x %d, Vec is %d x %d", rows, cols, other.rows, other.cols));
+    }
 }
 

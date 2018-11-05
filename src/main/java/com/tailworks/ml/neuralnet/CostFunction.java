@@ -31,6 +31,7 @@ public interface CostFunction {
     //}
 
 
+
     // 0.5 * ∑(L−E)^2
     class Quadratic implements CostFunction {
         @Override

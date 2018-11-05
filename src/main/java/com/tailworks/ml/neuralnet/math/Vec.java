@@ -26,8 +26,7 @@ public class Vec {
     }
 
     public double dot(Vec u) {
-        if (u.dimension() != dimension())
-            throw new IllegalArgumentException(format("Vectors of different dim: Input is %d, Vec is %d", u.dimension(), dimension()));
+        assertCorrectDimension(u.dimension());
 
         double sum = 0;
         for (int i = 0; i < data.length; i++)
@@ -60,8 +59,7 @@ public class Vec {
     }
 
     public Vec subtract(Vec u) {
-        if (u.dimension() != dimension())
-            throw new IllegalArgumentException(format("Vectors of different dim: Input is %d, Vec is %d", u.dimension(), dimension()));
+        assertCorrectDimension(u.dimension());
 
         double[] result = new double[u.dimension()];
 
@@ -91,11 +89,6 @@ public class Vec {
         return map(value -> s * value);
     }
 
-    public Vec negate() {
-        return scale(-1);
-    }
-
-
     public Matrix outerProduct(Vec u) {
         double[][] result = new double[u.dimension()][dimension()];
 
@@ -108,8 +101,7 @@ public class Vec {
     }
 
     public Vec elementProduct(Vec u) {
-        if (u.dimension() != dimension())
-            throw new IllegalArgumentException(format("Vectors of different dim: Input is %d, Vec is %d", u.dimension(), dimension()));
+        assertCorrectDimension(u.dimension());
 
         double[] result = new double[u.dimension()];
 
@@ -124,8 +116,7 @@ public class Vec {
     }
 
     public Vec add(Vec u) {
-        if (u.dimension() != dimension())
-            throw new IllegalArgumentException(format("Vectors of different dim: Input is %d, Vec is %d", u.dimension(), dimension()));
+        assertCorrectDimension(u.dimension());
 
         double[] result = new double[u.dimension()];
 
@@ -135,18 +126,22 @@ public class Vec {
         return new Vec(result);
     }
 
-
-    public Matrix columnMultiply(Matrix m) {
-        if (dimension() != m.numberOfRows())
-            throw new IllegalArgumentException(format("Vector of different dimension than number of rows in matrix: Input is %d, Vec is %d", m.numberOfRows(), dimension()));
+    public Vec multiply(Matrix m) {
+        assertCorrectDimension(m.numberOfRows());
 
         double[][] mData = m.getData();
-        double[][] result = new double[dimension()][m.numberOfCols()];
+        double[] result = new double[m.numberOfCols()];
 
         for (int col = 0; col < m.numberOfCols(); col++)
             for (int row = 0; row < m.numberOfRows(); row++)
-                result[row][col] = mData[row][col] * data[row];
+                result[col] += mData[row][col] * data[row];
 
-        return new Matrix(result);
+        return new Vec(result);
+    }
+
+
+    private void assertCorrectDimension(int inpDim) {
+        if (dimension() != inpDim)
+            throw new IllegalArgumentException(format("Different dimensions: Input is %d, Vec is %d", inpDim, dimension()));
     }
 }

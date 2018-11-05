@@ -1,9 +1,13 @@
 package com.tailworks.ml.neuralnet;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
-import com.tailworks.ml.neuralnet.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,18 +29,19 @@ public class NeuralNetwork {
         Layer inputLayer = new Layer(nb.networkInputSize, Activation.Identity);
         layers.add(inputLayer);
 
-        // int sizeOfPreviousLayer = networkInputSize;
         Layer precedingLayer = inputLayer;
 
         for (int i = 0; i < nb.layers.size(); i++) {
             Layer layer = nb.layers.get(i);
-            Matrix w = new Matrix(layer.size(), precedingLayer.size());
+            Matrix w = new Matrix(precedingLayer.size(), layer.size());
             nb.initializer.initWeights(w, i);
             layer.addWeights(w);
             layers.add(layer);
             layer.setPrecedingLayer(precedingLayer);
             precedingLayer = layer;
         }
+
+
     }
 
 
@@ -75,10 +80,10 @@ public class NeuralNetwork {
 
             // prepare error propagation and store in
             Vec dE_dI = dE_dO.elementProduct(dO_dI);
-            Vec backpropErrorToNextLayer = layer.getWeights().transpose().multiply(dE_dI);
+            Vec backpropErrorToNextLayer = layer.getWeights().multiply(dE_dI);
             precedingLayer.setBackpropError(backpropErrorToNextLayer);
 
-            Matrix dE_dW = precedingLayer.getOut().outerProduct(dE_dI);
+            Matrix dE_dW = dE_dI.outerProduct(precedingLayer.getOut());
 
             deltaWeights.add(0, dE_dW);
             deltaBias.add(0, dE_dI);
@@ -115,20 +120,15 @@ public class NeuralNetwork {
         return layers.get(layers.size() - 1);
     }
 
-    public void printWeights() {
-        int cnt = 1;
-        for (Layer layer : layers) {
-            if (notFirstLayer(layer)) {
-                Matrix weights = layer.getWeights();
-                double[][] data = weights.transpose().getData();
-                System.out.println("W" + (cnt++) + ": \n" + Util.prettyString(data));
-            }
-        }
-    }
-
-
     public String toJson() {
-        return new Gson().toJson(new NetworkState(this));
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(Double.class,
+                        (JsonSerializer<Double>) (src, typeOfSrc, context) ->
+                                new JsonPrimitive((float) src.doubleValue())
+                )
+                .setPrettyPrinting()
+                .create();
+        return gson.toJson(new NetworkState(this));
     }
 
     // --------------------------------------------------------------------
@@ -137,6 +137,7 @@ public class NeuralNetwork {
      * Simple builder for a NeuralNetwork
      */
     public static class Builder {
+        private static Logger log = LoggerFactory.getLogger(Builder.class);
 
         private List<Layer> layers = new ArrayList<>();
         private int networkInputSize;
@@ -171,7 +172,9 @@ public class NeuralNetwork {
         }
 
         public NeuralNetwork create() {
-            return new NeuralNetwork(this);
+            NeuralNetwork network = new NeuralNetwork(this);
+            log.info("Created NeuralNetwork: " + network.toJson());
+            return network;
         }
 
     }

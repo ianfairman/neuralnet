@@ -41,23 +41,6 @@ public class MatrixTest {
     }
 
     @Test
-    public void testAdd() {
-        Matrix U = new Matrix(new double[][]{
-                {2, 3},
-                {3, 4}
-        });
-        Matrix V = new Matrix(new double[][]{
-                {4, 5},
-                {6, 7}
-        });
-        Matrix R = U.add(V);
-
-        assertEquals(8, R.getData()[0][1], 0.1);
-        assertEquals(11, R.getData()[1][1], 0.1);
-    }
-
-
-    @Test
     public void testAverage() {
         Matrix U = new Matrix(new double[][]{
                 {2, 3},

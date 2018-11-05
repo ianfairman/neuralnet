@@ -9,17 +9,18 @@ import static org.junit.Assert.assertEquals;
 
 public class NeuralNetworkTest {
 
+    public static final double EPS = 0.00001;
+
     // Based on forward pass here
     // https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
     @Test
     public void testEvaluate() {
 
         double[][][] initWeights = {
-                {{0.1, 0.3, 0.4}, {0.2, 0.2, 0.3}, {0.3, 0.7, 0.9}},
-                {{0.2, 0.3, 0.6}, {0.3, 0.5, 0.4}, {0.5, 0.7, 0.8}},
-                {{0.1, 0.3, 0.5}, {0.4, 0.7, 0.2}, {0.8, 0.2, 0.9}},
+                {{0.1, 0.2, 0.3}, {0.3, 0.2, 0.7}, {0.4, 0.3, 0.9}},
+                {{0.2, 0.3, 0.5}, {0.3, 0.5, 0.7}, {0.6, 0.4, 0.8}},
+                {{0.1, 0.4, 0.8}, {0.3, 0.7, 0.2}, {0.5, 0.2, 0.9}}
         };
-
         NeuralNetwork network =
                 new NeuralNetwork.Builder(3)
                         .addLayer(new Layer(3, ReLU, 1))
@@ -34,9 +35,9 @@ public class NeuralNetworkTest {
 
         Vec out = network.evaluate(new Vec(0.1, 0.2, 0.7)).getOutput();
 
-        assertEquals(0.26979, out.getData()[0], 0.1);
-        assertEquals(0.32227, out.getData()[1], 0.1);
-        assertEquals(0.40793, out.getData()[2], 0.1);
+        assertEquals(0.26979, out.getData()[0], EPS);
+        assertEquals(0.32227, out.getData()[1], EPS);
+        assertEquals(0.40793, out.getData()[2], EPS);
     }
 
 
@@ -45,8 +46,8 @@ public class NeuralNetworkTest {
     @Test
     public void testEvaluateAndLearn() {
         double[][][] initWeights = {
-                {{0.15, 0.20}, {0.25, 0.30}},
-                {{0.40, 0.45}, {0.50, 0.55}},
+                {{0.15, 0.25}, {0.20, 0.30}},
+                {{0.40, 0.50}, {0.45, 0.55}},
         };
 
         NeuralNetwork network =
@@ -62,7 +63,6 @@ public class NeuralNetworkTest {
                         .create();
 
 
-        double eps = 0.00000001;
 
         Vec wanted = new Vec(0.01, 0.99);
         Vec input = new Vec(0.05, 0.1);
@@ -71,18 +71,18 @@ public class NeuralNetworkTest {
 
         Vec out = result.getOutput();
 
-        assertEquals(0.298371109, result.getCost(), eps);
-        assertEquals(0.75136507, out.getData()[0], eps);
-        assertEquals(0.77292846, out.getData()[1], eps);
+        assertEquals(0.29837110, result.getCost(), EPS);
+        assertEquals(0.75136507, out.getData()[0], EPS);
+        assertEquals(0.77292846, out.getData()[1], EPS);
 
         network.learn(wanted);
 
         result = network.evaluate(input, wanted);
         out = result.getOutput();
 
-        assertEquals(0.28047144, result.getCost(), eps);
-        assertEquals(0.72844176, out.getData()[0], eps);
-        assertEquals(0.77837692, out.getData()[1], eps);
+        assertEquals(0.28047144, result.getCost(), EPS);
+        assertEquals(0.72844176, out.getData()[0], EPS);
+        assertEquals(0.77837692, out.getData()[1], EPS);
 
         for (int i = 0; i < 10000 - 2; i++) {
             network.learn(wanted);
@@ -90,9 +90,9 @@ public class NeuralNetworkTest {
         }
 
         out = result.getOutput();
-        assertEquals(0.0000024485, result.getCost(), eps);
-        assertEquals(0.011587777, out.getData()[0], eps);
-        assertEquals(0.9884586899, out.getData()[1], eps);
+        assertEquals(0.0000024485, result.getCost(), EPS);
+        assertEquals(0.011587777, out.getData()[0], EPS);
+        assertEquals(0.9884586899, out.getData()[1], EPS);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class NeuralNetworkTest {
                         .addLayer(new Layer(6, LogSigmoid, 0.5))
                         .addLayer(new Layer(14, LogSigmoid, 0.5))
                         .setLearningRate(0.5)
-                        .initWeights(new Initializer.HeNormal())
+                        .initWeights(new Initializer.XavierNormal())
                         .create();
 
 
@@ -143,7 +143,7 @@ public class NeuralNetworkTest {
 
 
         int cnt = 0;
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 2900; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
             network.evaluate(input);
