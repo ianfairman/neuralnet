@@ -35,7 +35,7 @@ public class VecTest {
     public void test_multiply() {
         Vec v = new Vec(1, 2);  // 1x2
         Matrix m = new Matrix(new double[][]{{2, 1, 3}, {3, 4, -1}});  // 2x3
-        Vec res = v.multiply(m);
+        Vec res = v.mul(m);
 
         assertEquals(res.dimension(), 3);
         assertEquals(res.getData()[0], 8, 0.001);
@@ -46,7 +46,7 @@ public class VecTest {
 
     @Test
     public void sub() {
-        assertEquals(new Vec(-1, -4, 1), new Vec(1, -2, 3).subtract(new Vec(2, 2, 2)));
+        assertEquals(new Vec(-1, -4, 1), new Vec(1, -2, 3).sub(new Vec(2, 2, 2)));
     }
 
     @Test

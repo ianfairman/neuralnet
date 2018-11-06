@@ -75,7 +75,7 @@ public class NeuralNetwork {
                     costFunction.getDerivative(wanted, out) :
                     layer.getBackpropError();  // error prepared in last layer for us
 
-            Vec dO_dI = layer.getActivation().dFn(out);
+            Vec dO_dI = layer.getActivation().dFn(out, dE_dO);
 
             // prepare error propagation and store in
             Vec dE_dI = dE_dO.elementProduct(dO_dI);
@@ -99,7 +99,7 @@ public class NeuralNetwork {
         for (Layer l : layers)
             if (notFirstLayer(l)) {
                 l.getWeights().subtract(deltaWeights.get(cnt).scale(learningRate));
-                Vec newBias = l.getBias().subtract(deltaBias.get(cnt).scale(learningRate));
+                Vec newBias = l.getBias().sub(deltaBias.get(cnt).mul(learningRate));
                 l.setBias(newBias);
                 cnt++;
             }
@@ -127,6 +127,10 @@ public class NeuralNetwork {
         return gsonBuilder.create().toJson(new NetworkState(this));
     }
 
+    public List<Layer> getLayers() {
+        return layers;
+    }
+
     // --------------------------------------------------------------------
 
     /**
@@ -141,7 +145,7 @@ public class NeuralNetwork {
         // defaults:
         private double learningRate = 0.005;
         private Initializer initializer = new Initializer.Random(-0.5, 0.5);
-        private CostFunction costFunction = new CostFunction.Quadratic();
+        private CostFunction costFunction = new CostFunction.MSE();
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;

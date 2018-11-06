@@ -41,7 +41,7 @@ public class Layer {
 
     public Layer feedWith(Vec in) {
         if (weights != null) {
-            in = in.multiply(weights);
+            in = in.mul(weights);
         }
         if (in.dimension() != inData.dimension()) throw new IllegalArgumentException();
         System.arraycopy(in.getData(), 0, inData.getData(), 0, inData.getData().length);

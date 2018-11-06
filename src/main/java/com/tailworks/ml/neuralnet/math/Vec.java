@@ -1,6 +1,7 @@
 package com.tailworks.ml.neuralnet.math;
 
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
 
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
@@ -58,7 +59,7 @@ public class Vec {
         return ixOfLargest;
     }
 
-    public Vec subtract(Vec u) {
+    public Vec sub(Vec u) {
         assertCorrectDimension(u.dimension());
 
         double[] result = new double[u.dimension()];
@@ -85,7 +86,7 @@ public class Vec {
     }
 
 
-    public Vec scale(double s) {
+    public Vec mul(double s) {
         return map(value -> s * value);
     }
 
@@ -126,7 +127,7 @@ public class Vec {
         return new Vec(result);
     }
 
-    public Vec multiply(Matrix m) {
+    public Vec mul(Matrix m) {
         assertCorrectDimension(m.numberOfRows());
 
         double[][] mData = m.getData();
@@ -144,4 +145,22 @@ public class Vec {
         if (dimension() != inpDim)
             throw new IllegalArgumentException(format("Different dimensions: Input is %d, Vec is %d", inpDim, dimension()));
     }
+
+    public double max() {
+        return DoubleStream.of(data).max().getAsDouble();
+    }
+
+    public Vec sub(double a) {
+        double[] result = new double[dimension()];
+
+        for (int i = 0; i < data.length; i++)
+            result[i] = data[i] - a;
+
+        return new Vec(result);
+    }
+
+    public double sumElements() {
+        return DoubleStream.of(data).sum();
+    }
+
 }

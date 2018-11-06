@@ -11,8 +11,6 @@ public class NeuralNetworkTest {
 
     public static final double EPS = 0.00001;
 
-    // Based on forward pass here
-    // https://medium.com/@14prakash/back-propagation-is-very-simple-who-made-it-complicated-97b794c97e5c
     @Test
     public void testEvaluate() {
 
@@ -25,7 +23,7 @@ public class NeuralNetworkTest {
                 new NeuralNetwork.Builder(3)
                         .addLayer(new Layer(3, ReLU, 1))
                         .addLayer(new Layer(3, LogSigmoid, 1))
-                        .addLayer(new Layer(3, Softmax_broken, 1))
+                        .addLayer(new Layer(3, Softmax, 1))
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
                             for (int row = 0; row < data.length; row++)
@@ -35,9 +33,11 @@ public class NeuralNetworkTest {
 
         Vec out = network.evaluate(new Vec(0.1, 0.2, 0.7)).getOutput();
 
-        assertEquals(0.26979, out.getData()[0], EPS);
-        assertEquals(0.32227, out.getData()[1], EPS);
-        assertEquals(0.40793, out.getData()[2], EPS);
+        double[] data = out.getData();
+        assertEquals(0.198446894232731, data[0], EPS);
+        assertEquals(0.2853555304250049, data[1], EPS);
+        assertEquals(0.5161975753422642, data[2], EPS);
+        assertEquals(1, data[0] + data[1] + data[2], EPS);
     }
 
 
@@ -54,6 +54,7 @@ public class NeuralNetworkTest {
                 new NeuralNetwork.Builder(2)
                         .addLayer(new Layer(2, LogSigmoid, new Vec(0.35, 0.35)))
                         .addLayer(new Layer(2, LogSigmoid, new Vec(0.60, 0.60)))
+                        .setCostFunction(new CostFunction.L2Half())
                         .setLearningRate(0.5)
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
@@ -101,7 +102,8 @@ public class NeuralNetworkTest {
                 new NeuralNetwork.Builder(4)
                         .addLayer(new Layer(6, LogSigmoid, 0.5))
                         .addLayer(new Layer(14, LogSigmoid, 0.5))
-                        .setLearningRate(0.5)
+                        .setCostFunction(new CostFunction.L2())
+                        .setLearningRate(1)
                         .initWeights(new Initializer.XavierNormal())
                         .create();
 
@@ -142,7 +144,7 @@ public class NeuralNetworkTest {
 
 
         int cnt = 0;
-        for (int i = 0; i < 2900; i++) {
+        for (int i = 0; i < 20000; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
             network.evaluate(input);

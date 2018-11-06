@@ -2,11 +2,9 @@ package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Function;
 import com.tailworks.ml.neuralnet.math.Vec;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
-import static java.util.Arrays.stream;
 
 public class Activation {
 
@@ -24,21 +22,17 @@ public class Activation {
         this.dFn = dFn;
     }
 
-    public Vec fn(Vec vec) {
-        return vec.map(fn);
+    public Vec fn(Vec in) {
+        return in.map(fn);
     }
 
-    public Vec dFn(Vec vec) {
-        return vec.map(dFn);
+    public Vec dFn(Vec out, Vec dE_dO) {
+        return out.map(dFn);
     }
 
     public String getName() {
         return name;
     }
-
-
-
-
 
 
     // -----------------------------------------------------------------
@@ -80,32 +74,27 @@ public class Activation {
     // same element input. Simple element mapping will not suffice.
     public static Activation Softmax = new Activation("Softmax") {
         @Override
-        public Vec fn(Vec vec) {
-            double[] data = vec.getData();
+        public Vec fn(Vec in) {
+            double[] data = in.getData();
             double sum = 0;
+            double max = in.max();
             for (double a : data)
-                sum += exp(a);
+                sum += exp(a - max);
 
             double finalSum = sum;
-            return vec.map(value -> exp(value) / finalSum);
+            return in.map(a -> exp(a - max) / finalSum);
         }
 
         @Override
-        public Vec dFn(Vec vec) {
-            throw new NotImplementedException();
+        public Vec dFn(Vec out, Vec dE_dO) {
+            // TODO fix ... this is broken
+            Vec v2 = dE_dO.mul(2);
+            double x = out.elementProduct(dE_dO).sumElements();
+            Vec subtract = dE_dO.sub(x);
+            Vec d = out.elementProduct(subtract);
+
+            return d;
         }
     };
 
-    public static Activation Softmax_broken = new Activation("Softmax_broken") {
-        @Override
-        public Vec fn(Vec vec) {
-            double sum = stream(vec.getData()).sum();
-            return vec.map(value -> value / sum);
-        }
-
-        @Override
-        public Vec dFn(Vec vec) {
-            throw new NotImplementedException();
-        }
-    };
 }
