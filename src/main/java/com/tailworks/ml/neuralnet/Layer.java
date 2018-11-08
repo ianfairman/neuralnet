@@ -12,9 +12,7 @@ public class Layer {
     private Activation activation;
     private Matrix weights;
     private Vec bias;
-
     private Layer precedingLayer;
-    private Vec backpropError;
 
     public Layer(int size, Activation activation) {
         this (size, activation, 0);
@@ -81,15 +79,6 @@ public class Layer {
     public boolean hasPrecedingLayer() {
         return precedingLayer != null;
     }
-
-    public void setBackpropError(Vec backpropError) {
-        this.backpropError = backpropError;
-    }
-
-    public Vec getBackpropError() {
-        return backpropError;
-    }
-
 
     public Vec getBias() {
         return bias;
