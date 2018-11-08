@@ -22,7 +22,7 @@ public class NeuralNetworkTest {
         NeuralNetwork network =
                 new NeuralNetwork.Builder(3)
                         .addLayer(new Layer(3, ReLU, 1))
-                        .addLayer(new Layer(3, LogSigmoid, 1))
+                        .addLayer(new Layer(3, Sigmoid, 1))
                         .addLayer(new Layer(3, Softmax, 1))
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
@@ -52,8 +52,8 @@ public class NeuralNetworkTest {
 
         NeuralNetwork network =
                 new NeuralNetwork.Builder(2)
-                        .addLayer(new Layer(2, LogSigmoid, new Vec(0.35, 0.35)))
-                        .addLayer(new Layer(2, LogSigmoid, new Vec(0.60, 0.60)))
+                        .addLayer(new Layer(2, Sigmoid, new Vec(0.35, 0.35)))
+                        .addLayer(new Layer(2, Sigmoid, new Vec(0.60, 0.60)))
                         .setCostFunction(new CostFunction.L2Half())
                         .setLearningRate(0.5)
                         .initWeights((weights, layer) -> {
@@ -100,8 +100,8 @@ public class NeuralNetworkTest {
 
         NeuralNetwork network =
                 new NeuralNetwork.Builder(4)
-                        .addLayer(new Layer(6, LogSigmoid, 0.5))
-                        .addLayer(new Layer(14, LogSigmoid, 0.5))
+                        .addLayer(new Layer(6, Sigmoid, 0.5))
+                        .addLayer(new Layer(14, Sigmoid, 0.5))
                         .setCostFunction(new CostFunction.L2())
                         .setLearningRate(1)
                         .initWeights(new Initializer.XavierNormal())
@@ -165,14 +165,14 @@ public class NeuralNetworkTest {
         NeuralNetwork n1 =
                 new NeuralNetwork.Builder(2)
                         .addLayer(new Layer(2, ReLU, 0.5))
-                        .addLayer(new Layer(2, LogSigmoid, 0.5))
+                        .addLayer(new Layer(2, Sigmoid, 0.5))
                         .initWeights(new Initializer.XavierNormal())
                         .create();
 
         NeuralNetwork n2 =
                 new NeuralNetwork.Builder(2)
                         .addLayer(new Layer(2, ReLU, 0.5))
-                        .addLayer(new Layer(2, LogSigmoid, 0.5))
+                        .addLayer(new Layer(2, Sigmoid, 0.5))
                         .initWeights(new Initializer.XavierNormal())
                         .create();
 

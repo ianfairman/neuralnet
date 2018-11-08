@@ -68,24 +68,25 @@ public class NeuralNetwork {
         Layer layer = lastLayer;
 
         do {
+            Vec in = layer.getIn();
             Vec out = layer.getOut();
             Layer precedingLayer = layer.getPrecedingLayer();
 
-            Vec dE_dO = layer == lastLayer ?        // Change of Error w.r.p change of output
+            Vec dEdO = layer == lastLayer ?        // Change of Error w.r.p change of output
                     costFunction.getDerivative(wanted, out) :
                     layer.getBackpropError();  // error prepared in last layer for us
 
-            Vec dO_dI = layer.getActivation().dFn(out, dE_dO);
+
+            Vec dEdI = layer.getActivation().dEdI(out, dEdO);
 
             // prepare error propagation and store in
-            Vec dE_dI = dE_dO.elementProduct(dO_dI);
-            Vec backpropErrorToNextLayer = layer.getWeights().multiply(dE_dI);
+            Vec backpropErrorToNextLayer = layer.getWeights().multiply(dEdI);
             precedingLayer.setBackpropError(backpropErrorToNextLayer);
 
-            Matrix dE_dW = dE_dI.outerProduct(precedingLayer.getOut());
+            Matrix dEdW = dEdI.outerProduct(precedingLayer.getOut());
 
-            deltaWeights.add(0, dE_dW);
-            deltaBias.add(0, dE_dI);
+            deltaWeights.add(0, dEdW);
+            deltaBias.add(0, dEdI);
 
             layer = precedingLayer;
         }

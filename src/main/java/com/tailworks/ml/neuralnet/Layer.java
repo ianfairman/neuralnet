@@ -54,6 +54,10 @@ public class Layer {
         return outData;
     }
 
+    public Vec getIn() {
+        return inData;
+    }
+
     public Activation getActivation() {
         return activation;
     }
