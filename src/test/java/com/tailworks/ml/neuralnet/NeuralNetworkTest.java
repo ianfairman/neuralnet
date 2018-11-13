@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 public class NeuralNetworkTest {
 
-    public static final double EPS = 0.00001;
+    private static final double EPS = 0.00001;
 
     @Test
     public void testEvaluate() {
@@ -19,6 +19,7 @@ public class NeuralNetworkTest {
                 {{0.2, 0.3, 0.5}, {0.3, 0.5, 0.7}, {0.6, 0.4, 0.8}},
                 {{0.1, 0.4, 0.8}, {0.3, 0.7, 0.2}, {0.5, 0.2, 0.9}}
         };
+
         NeuralNetwork network =
                 new NeuralNetwork.Builder(3)
                         .addLayer(new Layer(3, ReLU, 1))
@@ -144,7 +145,7 @@ public class NeuralNetworkTest {
 
 
         int cnt = 0;
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 1100; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
             network.evaluate(input);

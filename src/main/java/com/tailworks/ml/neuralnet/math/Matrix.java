@@ -7,7 +7,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
 /**
- * Careful: not immutable   TODO: consider fixing
+ * Careful: not immutable.
  */
 public class Matrix {
 
@@ -40,15 +40,15 @@ public class Matrix {
         return this;
     }
 
-    public int numberOfRows() {
+    public int rows() {
         return rows;
     }
 
-    public int numberOfCols() {
+    public int cols() {
         return cols;
     }
 
-    public Matrix scale(double s) {
+    public Matrix mul(double s) {
         return map(value -> s * value);
     }
 
@@ -56,7 +56,17 @@ public class Matrix {
         return data;
     }
 
-    public Matrix subtract(Matrix other) {
+    public Matrix add(Matrix other) {
+        assertCorrectDimension(other);
+
+        for (int y = 0; y < rows; y++)
+            for (int x = 0; x < cols; x++)
+                data[y][x] += other.data[y][x];
+
+        return this;
+    }
+
+    public Matrix sub(Matrix other) {
         assertCorrectDimension(other);
 
         for (int y = 0; y < rows; y++)
@@ -75,6 +85,7 @@ public class Matrix {
         return stream(data).flatMapToDouble(Arrays::stream).map(a -> (a - avg) * (a - avg)).average().getAsDouble();
     }
 
+    // -------------------------------------------------------------------------
 
     private void assertCorrectDimension(Matrix other) {
         if (rows != other.rows || cols != other.cols)

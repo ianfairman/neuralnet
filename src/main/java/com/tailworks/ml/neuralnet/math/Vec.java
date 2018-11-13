@@ -128,13 +128,13 @@ public class Vec {
     }
 
     public Vec mul(Matrix m) {
-        assertCorrectDimension(m.numberOfRows());
+        assertCorrectDimension(m.rows());
 
         double[][] mData = m.getData();
-        double[] result = new double[m.numberOfCols()];
+        double[] result = new double[m.cols()];
 
-        for (int col = 0; col < m.numberOfCols(); col++)
-            for (int row = 0; row < m.numberOfRows(); row++)
+        for (int col = 0; col < m.cols(); col++)
+            for (int row = 0; row < m.rows(); row++)
                 result[col] += mData[row][col] * data[row];
 
         return new Vec(result);

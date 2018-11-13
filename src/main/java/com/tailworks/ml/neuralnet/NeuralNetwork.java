@@ -14,14 +14,14 @@ import java.util.List;
 public class NeuralNetwork {
 
     private final double learningRate;
-    private List<Layer> layers = new ArrayList<>();
-    private List<Matrix> deltaWeights = new ArrayList<>();
-    private List<Vec> deltaBias = new ArrayList<>();
-    private CostFunction costFunction;
+    private final int batchSize;
+    private final CostFunction costFunction;
 
+    private List<Layer> layers = new ArrayList<>();
 
     private NeuralNetwork(Builder nb) {
         learningRate = nb.learningRate;
+        batchSize = nb.batchSize;
         costFunction = nb.costFunction;
 
         // Adding inputLayer
@@ -39,8 +39,6 @@ public class NeuralNetwork {
             layer.setPrecedingLayer(precedingLayer);
             precedingLayer = layer;
         }
-
-
     }
 
 
@@ -81,8 +79,8 @@ public class NeuralNetwork {
 
             Matrix dEdW = dEdI.outerProduct(precedingLayer.getOut());
 
-            deltaWeights.add(0, dEdW);
-            deltaBias.add(0, dEdI);
+            layer.addDeltaWeights(dEdW);
+            layer.addDeltaBias(dEdI);
 
             layer = precedingLayer;
         }
@@ -92,17 +90,12 @@ public class NeuralNetwork {
         // ----------------------------------
         // Update weights
         // ----------------------------------
-        int cnt = 0;
-        for (Layer l : layers)
+        for (Layer l : layers) {
             if (notFirstLayer(l)) {
-                l.getWeights().subtract(deltaWeights.get(cnt).scale(learningRate));
-                Vec newBias = l.getBias().sub(deltaBias.get(cnt).mul(learningRate));
-                l.setBias(newBias);
-                cnt++;
+                l.updateWeights(learningRate);
+                l.updateBias(learningRate);
             }
-
-        deltaWeights.clear();
-        deltaBias.clear();
+        }
     }
 
     private boolean notFirstLayer(Layer layer) {
@@ -118,15 +111,12 @@ public class NeuralNetwork {
         GsonBuilder gsonBuilder = new GsonBuilder()
                 .registerTypeAdapter(Double.class,
                         (JsonSerializer<Double>) (src, typeOfSrc, context) ->
-                                new JsonPrimitive((double) src.doubleValue())
+                                new JsonPrimitive(src.floatValue())
                 );
         if (pretty) gsonBuilder.setPrettyPrinting();
         return gsonBuilder.create().toJson(new NetworkState(this));
     }
 
-    public List<Layer> getLayers() {
-        return layers;
-    }
 
     // --------------------------------------------------------------------
 
@@ -143,6 +133,7 @@ public class NeuralNetwork {
         private double learningRate = 0.005;
         private Initializer initializer = new Initializer.Random(-0.5, 0.5);
         private CostFunction costFunction = new CostFunction.MSE();
+        private int batchSize = 1;
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;
@@ -150,6 +141,11 @@ public class NeuralNetwork {
 
         public Builder setLearningRate(double learningRate) {
             this.learningRate = learningRate;
+            return this;
+        }
+
+        public Builder setBatchSize(int batchSize) {
+            this.batchSize = batchSize;
             return this;
         }
 
@@ -170,7 +166,7 @@ public class NeuralNetwork {
 
         public NeuralNetwork create() {
             NeuralNetwork network = new NeuralNetwork(this);
-            log.info("Created NeuralNetwork: " + network.toJson(false).substring(0, 100) + " ...");
+            log.info("Created NeuralNetwork: " + network.toJson(false).substring(0, 200) + " ...");
             return network;
         }
 
@@ -178,7 +174,7 @@ public class NeuralNetwork {
 
     // -----------------------------
 
-    private static class NetworkState {
+    public static class NetworkState {
         double learningRate;
         String costFunction;
         Layer.LayerState[] layers;
@@ -191,6 +187,10 @@ public class NeuralNetwork {
             for (int l = 0; l < network.layers.size(); l++) {
                 layers[l] = network.layers.get(l).getState();
             }
+        }
+
+        public Layer.LayerState[] getLayers() {
+            return layers;
         }
     }
 }

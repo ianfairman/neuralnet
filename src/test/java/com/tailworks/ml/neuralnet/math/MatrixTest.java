@@ -34,7 +34,7 @@ public class MatrixTest {
     @Test
     public void testScale() {
         Matrix W = new Matrix(new double[][]{{2, 3, 4}, {3, 4, 5}});
-        W = W.scale(2);
+        W = W.mul(2);
 
         assertEquals(6, W.getData()[0][1], 0.1);
         assertEquals(8, W.getData()[1][1], 0.1);

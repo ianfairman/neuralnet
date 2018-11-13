@@ -12,10 +12,17 @@ public class Layer {
     private Activation activation;
     private Matrix weights;
     private Vec bias;
+
+    private transient Matrix deltaWeights;
+    private transient Vec deltaBias;
+    private transient int weightsAdded = 0;
+    private transient int biasesAdded = 0;
+
     private Layer precedingLayer;
 
+
     public Layer(int size, Activation activation) {
-        this (size, activation, 0);
+        this(size, activation, 0);
     }
 
     public Layer(int size, Activation activation, double initialBias) {
@@ -23,6 +30,7 @@ public class Layer {
         inData = new Vec(size);
         outData = new Vec(size);
         bias = new Vec(size).map(x -> initialBias);
+        deltaBias = new Vec(size);
         this.activation = activation;
     }
 
@@ -30,6 +38,7 @@ public class Layer {
         this.size = size;
         inData = new Vec(size);
         this.bias = bias.copy();
+        deltaBias = new Vec(size);
         this.activation = activation;
     }
 
@@ -52,16 +61,13 @@ public class Layer {
         return outData;
     }
 
-    public Vec getIn() {
-        return inData;
-    }
-
     public Activation getActivation() {
         return activation;
     }
 
     public void addWeights(Matrix weights) {
         this.weights = weights;
+        deltaWeights = new Matrix(weights.rows(), weights.cols());
     }
 
     public Matrix getWeights() {
@@ -72,8 +78,8 @@ public class Layer {
         return precedingLayer;
     }
 
-    public void setPrecedingLayer(Layer preceedingLayer) {
-        this.precedingLayer = preceedingLayer;
+    public void setPrecedingLayer(Layer precedingLayer) {
+        this.precedingLayer = precedingLayer;
     }
 
     public boolean hasPrecedingLayer() {
@@ -84,15 +90,40 @@ public class Layer {
         return bias;
     }
 
-    public void setBias(Vec bias) {
-        this.bias = bias;
+
+    public synchronized void addDeltaWeights(Matrix dW) {
+        deltaWeights.add(dW);
+        weightsAdded++;
     }
+
+    public synchronized void addDeltaBias(Vec dB) {
+        deltaBias = deltaBias.add(dB);
+        biasesAdded++;
+    }
+
+    public synchronized void updateWeights(double learningRate) {
+        Matrix average_dW = deltaWeights.mul(1.0 / weightsAdded);
+        weights.sub(average_dW.mul(learningRate));
+
+        deltaWeights.map(a -> 0);
+        weightsAdded = 0;
+    }
+
+    public synchronized void updateBias(double learningRate) {
+        Vec average_bias = deltaBias.mul(1.0 / biasesAdded);
+        bias = bias.sub(average_bias.mul(learningRate));
+
+        deltaBias = deltaBias.map(a -> 0);
+        biasesAdded = 0;
+    }
+
+
+    // ------------------------------------------------------------------
+
 
     public LayerState getState() {
         return new LayerState(this);
     }
-
-
 
     public static class LayerState {
 

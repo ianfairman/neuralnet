@@ -21,8 +21,8 @@ public class VecTest {
         Vec b = new Vec(1, 2, 3, 4, 5, 6);
 
         Matrix result = a.outerProduct(b);
-        assertEquals(result.numberOfRows(), 6);
-        assertEquals(result.numberOfCols(), 3);
+        assertEquals(result.rows(), 6);
+        assertEquals(result.cols(), 3);
 
         assertEquals(result.getData()[0][0], 1, 0.001);
         assertEquals(result.getData()[0][2], 3, 0.001);

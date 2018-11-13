@@ -35,7 +35,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = 2.0 * Math.sqrt(6.0 / (weights.numberOfCols() + weights.numberOfRows()));
+            final double factor = 2.0 * Math.sqrt(6.0 / (weights.cols() + weights.rows()));
             weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
         }
     }
@@ -45,7 +45,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = Math.sqrt(2.0 / (weights.numberOfCols() + weights.numberOfRows()));
+            final double factor = Math.sqrt(2.0 / (weights.cols() + weights.rows()));
             weights.map(value -> rnd.nextGaussian() * factor);
         }
     }
@@ -55,7 +55,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = 2.0 * Math.sqrt(3.0 / weights.numberOfCols());
+            final double factor = 2.0 * Math.sqrt(3.0 / weights.cols());
             weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
         }
     }
@@ -65,7 +65,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = 1.0 / Math.sqrt(weights.numberOfCols());
+            final double factor = 1.0 / Math.sqrt(weights.cols());
             weights.map(value -> rnd.nextGaussian() * factor);
         }
     }
@@ -75,7 +75,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = 2.0 * Math.sqrt(6.0 / weights.numberOfCols());
+            final double factor = 2.0 * Math.sqrt(6.0 / weights.cols());
             weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
         }
     }
@@ -85,7 +85,7 @@ public interface Initializer {
 
         @Override
         public void initWeights(Matrix weights, int layer) {
-            final double factor = Math.sqrt(2.0 / weights.numberOfCols());
+            final double factor = Math.sqrt(2.0 / weights.cols());
             weights.map(value -> rnd.nextGaussian() * factor);
         }
     }
