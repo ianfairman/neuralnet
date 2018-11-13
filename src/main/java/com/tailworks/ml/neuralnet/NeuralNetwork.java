@@ -14,14 +14,12 @@ import java.util.List;
 public class NeuralNetwork {
 
     private final double learningRate;
-    private final int batchSize;
     private final CostFunction costFunction;
 
     private List<Layer> layers = new ArrayList<>();
 
     private NeuralNetwork(Builder nb) {
         learningRate = nb.learningRate;
-        batchSize = nb.batchSize;
         costFunction = nb.costFunction;
 
         // Adding inputLayer
@@ -43,15 +41,17 @@ public class NeuralNetwork {
 
 
     public Result evaluate(Vec input) {
-        return evaluate(input, null);
+        return evaluate(input, null, false);
     }
 
 
-    public Result evaluate(Vec input, Vec wanted) {
+    public Result evaluate(Vec input, Vec wanted, boolean learn) {
         Vec signal = input;
         for (Layer layer : layers)
             signal = layer.feedWith(signal).getOut();
 
+        if (learn)
+            learn(wanted);
 
         if (wanted != null) {
             double cost = costFunction.getTotal(wanted, signal);
@@ -61,7 +61,11 @@ public class NeuralNetwork {
     }
 
 
-    public void learn(Vec wanted) {
+    /**
+     *
+     * @param wanted
+     */
+    private void learn(Vec wanted) {
         Vec dEdO = null;
         Layer layer = getLastLayer();
 
@@ -85,23 +89,21 @@ public class NeuralNetwork {
             layer = precedingLayer;
         }
         while (layer.hasPrecedingLayer());      // Stop when we are at input layer
+    }
 
 
-        // ----------------------------------
-        // Update weights
-        // ----------------------------------
+    /**
+     * Let all gathered (but not yet realised) learning "sink in". That is: Update the
+     * weights and biases based on the deltas collected during evaluation & training.
+     */
+    public void updateFromLearning() {
         for (Layer l : layers) {
-            if (notFirstLayer(l)) {
+            if (!l.isInputLayer()) {
                 l.updateWeights(learningRate);
                 l.updateBias(learningRate);
             }
         }
     }
-
-    private boolean notFirstLayer(Layer layer) {
-        return layer.getPrecedingLayer() != null;
-    }
-
 
     private Layer getLastLayer() {
         return layers.get(layers.size() - 1);
@@ -133,7 +135,6 @@ public class NeuralNetwork {
         private double learningRate = 0.005;
         private Initializer initializer = new Initializer.Random(-0.5, 0.5);
         private CostFunction costFunction = new CostFunction.MSE();
-        private int batchSize = 1;
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;
@@ -141,11 +142,6 @@ public class NeuralNetwork {
 
         public Builder setLearningRate(double learningRate) {
             this.learningRate = learningRate;
-            return this;
-        }
-
-        public Builder setBatchSize(int batchSize) {
-            this.batchSize = batchSize;
             return this;
         }
 

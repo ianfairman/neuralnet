@@ -15,8 +15,8 @@ public class Layer {
 
     private transient Matrix deltaWeights;
     private transient Vec deltaBias;
-    private transient int weightsAdded = 0;
-    private transient int biasesAdded = 0;
+    private transient int deltaWeightsAdded = 0;
+    private transient int deltaBiasAdded = 0;
 
     private Layer precedingLayer;
 
@@ -86,35 +86,42 @@ public class Layer {
         return precedingLayer != null;
     }
 
+    public boolean isInputLayer() {
+        return precedingLayer == null;
+    }
+
     public Vec getBias() {
         return bias;
     }
 
-
     public synchronized void addDeltaWeights(Matrix dW) {
         deltaWeights.add(dW);
-        weightsAdded++;
+        deltaWeightsAdded++;
     }
 
     public synchronized void addDeltaBias(Vec dB) {
         deltaBias = deltaBias.add(dB);
-        biasesAdded++;
+        deltaBiasAdded++;
     }
 
     public synchronized void updateWeights(double learningRate) {
-        Matrix average_dW = deltaWeights.mul(1.0 / weightsAdded);
+        if (deltaWeightsAdded == 0) return;
+
+        Matrix average_dW = deltaWeights.mul(1.0 / deltaWeightsAdded);
         weights.sub(average_dW.mul(learningRate));
 
         deltaWeights.map(a -> 0);
-        weightsAdded = 0;
+        deltaWeightsAdded = 0;
     }
 
     public synchronized void updateBias(double learningRate) {
-        Vec average_bias = deltaBias.mul(1.0 / biasesAdded);
+        if (deltaBiasAdded == 0) return;
+
+        Vec average_bias = deltaBias.mul(1.0 / deltaBiasAdded);
         bias = bias.sub(average_bias.mul(learningRate));
 
         deltaBias = deltaBias.map(a -> 0);
-        biasesAdded = 0;
+        deltaBiasAdded = 0;
     }
 
 

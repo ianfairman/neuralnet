@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import static com.tailworks.ml.neuralnet.Activation.*;
 import static java.lang.System.arraycopy;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class NeuralNetworkTest {
 
@@ -68,7 +68,7 @@ public class NeuralNetworkTest {
         Vec wanted = new Vec(0.01, 0.99);
         Vec input = new Vec(0.05, 0.1);
 
-        Result result = network.evaluate(input, wanted);
+        Result result = network.evaluate(input, wanted, true);
 
         Vec out = result.getOutput();
 
@@ -76,9 +76,9 @@ public class NeuralNetworkTest {
         assertEquals(0.75136507, out.getData()[0], EPS);
         assertEquals(0.77292846, out.getData()[1], EPS);
 
-        network.learn(wanted);
+        network.updateFromLearning();
 
-        result = network.evaluate(input, wanted);
+        result = network.evaluate(input, wanted, true);
         out = result.getOutput();
 
         assertEquals(0.28047144, result.getCost(), EPS);
@@ -86,8 +86,8 @@ public class NeuralNetworkTest {
         assertEquals(0.77837692, out.getData()[1], EPS);
 
         for (int i = 0; i < 10000 - 2; i++) {
-            network.learn(wanted);
-            result = network.evaluate(input, wanted);
+            network.updateFromLearning();
+            result = network.evaluate(input, wanted, true);
         }
 
         out = result.getOutput();
@@ -148,8 +148,8 @@ public class NeuralNetworkTest {
         for (int i = 0; i < 1100; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
-            network.evaluate(input);
-            network.learn(expected);
+            network.evaluate(input, expected, true);
+            network.updateFromLearning();
             cnt = (cnt + 1) % trainInputs.length;
         }
 
@@ -161,7 +161,7 @@ public class NeuralNetworkTest {
     }
 
     @Test
-    public void testDeterminism() {
+    public void testBatching() {
 
         NeuralNetwork n1 =
                 new NeuralNetwork.Builder(2)
@@ -170,51 +170,49 @@ public class NeuralNetworkTest {
                         .initWeights(new Initializer.XavierNormal())
                         .create();
 
-        NeuralNetwork n2 =
-                new NeuralNetwork.Builder(2)
-                        .addLayer(new Layer(2, ReLU, 0.5))
-                        .addLayer(new Layer(2, Sigmoid, 0.5))
-                        .initWeights(new Initializer.XavierNormal())
-                        .create();
+        Vec i1 = new Vec(0.1, 0.7);
+        Vec i2 = new Vec(-0.2, 0.3);
+        Vec w1 = new Vec(0.2, 0.1);
+        Vec w2 = new Vec(1.2, -0.4);
 
-        Vec in = new Vec(0.1, 0.7);
+        // First, evaluate without learning
+        Result out1a = n1.evaluate(i1, w1, false);
+        Result out2a = n1.evaluate(i2, w2, false);
 
-        Vec o1a = n1.evaluate(in).getOutput();
-        Vec o1b = n1.evaluate(in).getOutput();
-        n1.evaluate(in);
-        n1.evaluate(in);
-        n1.evaluate(in);
-        n1.evaluate(in);
-        Vec o2 = n2.evaluate(in).getOutput();
+        // Then this should do nothing to the net
+        n1.updateFromLearning();
 
-        double eps = 0.00000001;
+        Result out1b = n1.evaluate(i1, w1, false);
+        Result out2b = n1.evaluate(i2, w2, false);
+        assertEquals(out1a.getOutput(), out1b.getOutput());
+        assertEquals(out2a.getOutput(), out2b.getOutput());
 
-        assertEquals(o1a.getData()[0], o1b.getData()[0], eps);
-        assertEquals(o1a.getData()[1], o1b.getData()[1], eps);
+        // Now, evaluate without learning
+        out1a = n1.evaluate(i1, w1, true);
+        out2a = n1.evaluate(i2, w2, true);
 
-        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
-        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+        double cost1BeforeLearning = out1b.getCost();
+        double cost2BeforeLearning = out2b.getCost();
 
-        Vec wanted = new Vec(0.2, 0.1);
-        n1.learn(wanted);
-        n2.learn(wanted);
+        // First verify that we still have not changed any weights
+        assertEquals(out1a.getOutput(), out1b.getOutput());
+        assertEquals(out2a.getOutput(), out2b.getOutput());
 
-        o1a = n1.evaluate(in).getOutput();
-        o2 = n2.evaluate(in).getOutput();
+        // This should however change things ...
+        n1.updateFromLearning();
 
-        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
-        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+        out1b = n1.evaluate(i1, w1, true);
+        out2b = n1.evaluate(i2, w2, true);
 
-        n1.learn(wanted);
-        n2.learn(wanted);
-        n1.learn(wanted);
-        n2.learn(wanted);
+        assertNotEquals(out1a.getOutput(), out1b.getOutput());
+        assertNotEquals(out2a.getOutput(), out2b.getOutput());
 
-        o1a = n1.evaluate(in).getOutput();
-        o2 = n2.evaluate(in).getOutput();
+        // ... and the cost should be lower
+        double cost1AfterLearning = out1b.getCost();
+        double cost2AfterLearning = out2b.getCost();
 
-        assertEquals(o1a.getData()[0], o2.getData()[0], eps);
-        assertEquals(o1a.getData()[1], o2.getData()[1], eps);
+        assertTrue(cost1AfterLearning < cost1BeforeLearning);
+        assertTrue(cost2AfterLearning < cost2BeforeLearning);
 
     }
 

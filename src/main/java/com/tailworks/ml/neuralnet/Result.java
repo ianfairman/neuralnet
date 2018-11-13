@@ -3,6 +3,7 @@ package com.tailworks.ml.neuralnet;
 import com.tailworks.ml.neuralnet.math.Vec;
 
 public class Result {
+
     private final Vec output;
     private final Double cost;          // optional
 
