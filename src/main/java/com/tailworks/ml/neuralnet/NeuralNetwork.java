@@ -75,20 +75,6 @@ public class NeuralNetwork {
 
 
     /**
-     * Let all gathered (but not yet realised) learning "sink in".
-     * That is: Update the weights and biases based on the deltas
-     * collected during evaluation & training.
-     */
-    public void updateFromLearning() {
-        for (Layer l : layers) {
-            if (!l.isInputLayer()) {
-                l.updateWeights(learningRate);
-                l.updateBias(learningRate);
-            }
-        }
-    }
-
-    /**
      * Will gather some learning based on the <code>wanted</code> vector
      * and how that differs to the actual output from the network. This
      * difference (or error) is backpropagated through the net. To make
@@ -120,6 +106,22 @@ public class NeuralNetwork {
         }
         while (layer.hasPrecedingLayer());      // Stop when we are at input layer
     }
+
+
+    /**
+     * Let all gathered (but not yet realised) learning "sink in".
+     * That is: Update the weights and biases based on the deltas
+     * collected during evaluation & training.
+     */
+    public void updateFromLearning() {
+        for (Layer l : layers) {
+            if (!l.isInputLayer()) {
+                l.updateWeights(learningRate);
+                l.updateBias(learningRate);
+            }
+        }
+    }
+
 
 
     public List<Layer> getLayers() {
