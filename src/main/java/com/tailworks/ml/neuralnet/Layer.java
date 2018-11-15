@@ -3,12 +3,13 @@ package com.tailworks.ml.neuralnet;
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
 
+import static java.lang.String.format;
+
 
 public class Layer {
 
     private final int size;
-    private Vec inData;
-    private Vec outData;
+    private ThreadLocal<Vec> out = new ThreadLocal<>();
     private Activation activation;
     private Matrix weights;
     private Vec bias;
@@ -27,8 +28,6 @@ public class Layer {
 
     public Layer(int size, Activation activation, double initialBias) {
         this.size = size;
-        inData = new Vec(size);
-        outData = new Vec(size);
         bias = new Vec(size).map(x -> initialBias);
         deltaBias = new Vec(size);
         this.activation = activation;
@@ -36,7 +35,6 @@ public class Layer {
 
     public Layer(int size, Activation activation, Vec bias) {
         this.size = size;
-        inData = new Vec(size);
         this.bias = bias.copy();
         deltaBias = new Vec(size);
         this.activation = activation;
@@ -46,19 +44,21 @@ public class Layer {
         return size;
     }
 
-    public Layer feedWith(Vec in) {
+    public Layer evaluate(Vec in) {
         if (weights != null) {
             in = in.mul(weights);
         }
-        if (in.dimension() != inData.dimension()) throw new IllegalArgumentException();
-        System.arraycopy(in.getData(), 0, inData.getData(), 0, inData.getData().length);
 
-        outData = activation.fn(inData.add(bias));
+        if (in.dimension() != size)
+            throw new IllegalArgumentException(format("Input data is of size %d while network expects vectors of size %d", in.dimension(), size));
+
+        out.set(activation.fn(in.add(bias)));
+
         return this;
     }
 
     public Vec getOut() {
-        return outData;
+        return out.get();
     }
 
     public Activation getActivation() {
@@ -142,6 +142,14 @@ public class Layer {
             weights = layer.getWeights() != null ? layer.getWeights().getData() : null;
             bias = layer.getBias().getData();
             activation = layer.activation.getName();
+        }
+
+        public double[][] getWeights() {
+            return weights;
+        }
+
+        public double[] getBias() {
+            return bias;
         }
     }
 }

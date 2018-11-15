@@ -2,10 +2,15 @@ package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Vec;
 
+/**
+ * The outcome of an evaluation.
+ * Will always contain the output data.
+ * Might contain the cost.
+ */
 public class Result {
 
     private final Vec output;
-    private final Double cost;          // optional
+    private final Double cost;
 
     public Result(Vec output) {
         this.output = output;

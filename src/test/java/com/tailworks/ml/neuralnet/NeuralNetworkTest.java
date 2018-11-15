@@ -35,9 +35,9 @@ public class NeuralNetworkTest {
         Vec out = network.evaluate(new Vec(0.1, 0.2, 0.7)).getOutput();
 
         double[] data = out.getData();
-        assertEquals(0.198446894232731, data[0], EPS);
-        assertEquals(0.2853555304250049, data[1], EPS);
-        assertEquals(0.5161975753422642, data[2], EPS);
+        assertEquals(0.1984468942, data[0], EPS);
+        assertEquals(0.2853555304, data[1], EPS);
+        assertEquals(0.5161975753, data[2], EPS);
         assertEquals(1, data[0] + data[1] + data[2], EPS);
     }
 
@@ -68,7 +68,7 @@ public class NeuralNetworkTest {
         Vec wanted = new Vec(0.01, 0.99);
         Vec input = new Vec(0.05, 0.1);
 
-        Result result = network.evaluate(input, wanted, true);
+        Result result = network.evaluate(input, wanted);
 
         Vec out = result.getOutput();
 
@@ -78,7 +78,7 @@ public class NeuralNetworkTest {
 
         network.updateFromLearning();
 
-        result = network.evaluate(input, wanted, true);
+        result = network.evaluate(input, wanted);
         out = result.getOutput();
 
         assertEquals(0.28047144, result.getCost(), EPS);
@@ -87,7 +87,7 @@ public class NeuralNetworkTest {
 
         for (int i = 0; i < 10000 - 2; i++) {
             network.updateFromLearning();
-            result = network.evaluate(input, wanted, true);
+            result = network.evaluate(input, wanted);
         }
 
         out = result.getOutput();
@@ -148,7 +148,7 @@ public class NeuralNetworkTest {
         for (int i = 0; i < 1100; i++) {
             Vec input = new Vec(trainInputs[cnt]);
             Vec expected = new Vec(trainOutput[cnt]);
-            network.evaluate(input, expected, true);
+            network.evaluate(input, expected);
             network.updateFromLearning();
             cnt = (cnt + 1) % trainInputs.length;
         }
@@ -163,7 +163,7 @@ public class NeuralNetworkTest {
     @Test
     public void testBatching() {
 
-        NeuralNetwork n1 =
+        NeuralNetwork network =
                 new NeuralNetwork.Builder(2)
                         .addLayer(new Layer(2, ReLU, 0.5))
                         .addLayer(new Layer(2, Sigmoid, 0.5))
@@ -176,20 +176,20 @@ public class NeuralNetworkTest {
         Vec w2 = new Vec(1.2, -0.4);
 
         // First, evaluate without learning
-        Result out1a = n1.evaluate(i1, w1, false);
-        Result out2a = n1.evaluate(i2, w2, false);
+        Result out1a = network.evaluate(i1);
+        Result out2a = network.evaluate(i2);
 
         // Then this should do nothing to the net
-        n1.updateFromLearning();
+        network.updateFromLearning();
 
-        Result out1b = n1.evaluate(i1, w1, false);
-        Result out2b = n1.evaluate(i2, w2, false);
+        Result out1b = network.evaluate(i1, w1);
+        Result out2b = network.evaluate(i2, w2);
         assertEquals(out1a.getOutput(), out1b.getOutput());
         assertEquals(out2a.getOutput(), out2b.getOutput());
 
-        // Now, evaluate without learning
-        out1a = n1.evaluate(i1, w1, true);
-        out2a = n1.evaluate(i2, w2, true);
+        // Now, evaluate and learn
+        out1a = network.evaluate(i1, w1);
+        out2a = network.evaluate(i2, w2);
 
         double cost1BeforeLearning = out1b.getCost();
         double cost2BeforeLearning = out2b.getCost();
@@ -199,10 +199,10 @@ public class NeuralNetworkTest {
         assertEquals(out2a.getOutput(), out2b.getOutput());
 
         // This should however change things ...
-        n1.updateFromLearning();
+        network.updateFromLearning();
 
-        out1b = n1.evaluate(i1, w1, true);
-        out2b = n1.evaluate(i2, w2, true);
+        out1b = network.evaluate(i1, w1);
+        out2b = network.evaluate(i2, w2);
 
         assertNotEquals(out1a.getOutput(), out1b.getOutput());
         assertNotEquals(out2a.getOutput(), out2b.getOutput());
