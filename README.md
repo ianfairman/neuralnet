@@ -1,4 +1,4 @@
-# Neural net 
+# Neuralnet 
 
 Simple implementation of a neural network. Playground to try things out and to get a deeper understanding of a few of the basic concepts.
 
