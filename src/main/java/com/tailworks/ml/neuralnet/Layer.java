@@ -2,24 +2,28 @@ package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
+import com.tailworks.ml.neuralnet.optimizer.Optimizer;
 
-import static java.lang.String.format;
-
-
+/**
+ * A single layer in the network.
+ * Contains the weights and biases coming into this layer.
+ */
 public class Layer {
 
     private final int size;
     private ThreadLocal<Vec> out = new ThreadLocal<>();
     private Activation activation;
+    private Optimizer optimizer;
     private Matrix weights;
     private Vec bias;
 
+    private Layer precedingLayer;
+
+    // Not yet realized changes to the weights and biases ("observed things not yet learned")
     private transient Matrix deltaWeights;
     private transient Vec deltaBias;
     private transient int deltaWeightsAdded = 0;
     private transient int deltaBiasAdded = 0;
-
-    private Layer precedingLayer;
 
 
     public Layer(int size, Activation activation) {
@@ -44,17 +48,19 @@ public class Layer {
         return size;
     }
 
-    public Layer evaluate(Vec in) {
-        if (weights != null) {
-            in = in.mul(weights);
+    /**
+     * Feed the in-vector, i, through this layer.
+     * Stores a copy of the out vector.
+     * @param i The input vector
+     * @return The out vector o (i.e. the result of o = iW + b)
+     */
+    public Vec evaluate(Vec i) {
+        if (!hasPrecedingLayer()) {
+            out.set(i);    // No calculation i input layer, just store data
+        } else {
+            out.set(activation.fn(i.mul(weights).add(bias)));
         }
-
-        if (in.dimension() != size)
-            throw new IllegalArgumentException(format("Input data is of size %d while network expects vectors of size %d", in.dimension(), size));
-
-        out.set(activation.fn(in.add(bias)));
-
-        return this;
+        return out.get();
     }
 
     public Vec getOut() {
@@ -65,9 +71,13 @@ public class Layer {
         return activation;
     }
 
-    public void addWeights(Matrix weights) {
+    public void setWeights(Matrix weights) {
         this.weights = weights;
         deltaWeights = new Matrix(weights.rows(), weights.cols());
+    }
+
+    public void setOptimizer(Optimizer optimizer) {
+        this.optimizer = optimizer;
     }
 
     public Matrix getWeights() {
@@ -86,42 +96,35 @@ public class Layer {
         return precedingLayer != null;
     }
 
-    public boolean isInputLayer() {
-        return precedingLayer == null;
-    }
-
     public Vec getBias() {
         return bias;
     }
 
-    public synchronized void addDeltaWeights(Matrix dW) {
+    /**
+     * Add upcoming changes to the Weights and Biases.
+     * This does not mean that the network is updated.
+     */
+    public synchronized void addDeltaWeightsAndBiases(Matrix dW, Vec dB) {
         deltaWeights.add(dW);
         deltaWeightsAdded++;
-    }
-
-    public synchronized void addDeltaBias(Vec dB) {
         deltaBias = deltaBias.add(dB);
         deltaBiasAdded++;
     }
 
-    public synchronized void updateWeights(double learningRate) {
-        if (deltaWeightsAdded == 0) return;
+    public synchronized void updateWeightsAndBias() {
+        if (deltaWeightsAdded > 0) {
+            Matrix average_dW = deltaWeights.mul(1.0 / deltaWeightsAdded);
+            optimizer.updateWeights(weights, average_dW);
+            deltaWeights.map(a -> 0);   // Clear
+            deltaWeightsAdded = 0;
+        }
 
-        Matrix average_dW = deltaWeights.mul(1.0 / deltaWeightsAdded);
-        weights.sub(average_dW.mul(learningRate));
-
-        deltaWeights.map(a -> 0);
-        deltaWeightsAdded = 0;
-    }
-
-    public synchronized void updateBias(double learningRate) {
-        if (deltaBiasAdded == 0) return;
-
-        Vec average_bias = deltaBias.mul(1.0 / deltaBiasAdded);
-        bias = bias.sub(average_bias.mul(learningRate));
-
-        deltaBias = deltaBias.map(a -> 0);
-        deltaBiasAdded = 0;
+        if (deltaBiasAdded > 0) {
+            Vec average_bias = deltaBias.mul(1.0 / deltaBiasAdded);
+            bias = optimizer.updateBias(bias, average_bias);
+            deltaBias = deltaBias.map(a -> 0);  // Clear
+            deltaBiasAdded = 0;
+        }
     }
 
 

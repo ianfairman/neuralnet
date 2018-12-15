@@ -7,7 +7,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.stream;
 
 /**
- * Careful: not immutable.
+ * Careful: not immutable. Most matrix operations are made on same object.
  */
 public class Matrix {
 
@@ -26,9 +26,9 @@ public class Matrix {
 
     public Vec multiply(Vec v) {
         double[] out = new double[rows];
-        for (int y = 0; y < rows; y++) {
+        for (int y = 0; y < rows; y++)
             out[y] = new Vec(data[y]).dot(v);
-        }
+
         return new Vec(out);
     }
 

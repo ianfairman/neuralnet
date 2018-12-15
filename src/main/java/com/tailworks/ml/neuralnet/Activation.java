@@ -23,8 +23,7 @@ public class Activation {
     }
 
     // For most activation function it suffice to map each separate element. 
-    // I.e. they depend only on the single component in the vector. This is 
-    // tur both in 
+    // I.e. they depend only on the single component in the vector.
     public Vec fn(Vec in) {
         return in.map(fn);
     }
@@ -33,10 +32,10 @@ public class Activation {
         return out.map(dFn);
     }
 
-    // Also when calculating the Error change rate in terms of the input (dEdI)  
-    // it is just a matter of multiplying, i.e. dE/dI = dE/dO * dO/dI.
-    public Vec dEdI(Vec out, Vec dEdO) {
-        return dEdO.elementProduct(dFn(out));
+    // Also when calculating the Error change rate in terms of the input (dCdI)
+    // it is just a matter of multiplying, i.e. ∂C/∂I = ∂C/∂O * ∂O/∂I.
+    public Vec dCdI(Vec out, Vec dCdO) {
+        return dCdO.elementProduct(dFn(out));
     }
 
     public String getName() {
@@ -85,12 +84,13 @@ public class Activation {
     // --------------------------------------------------------------------------
     // Softmax needs a little extra love since element output depends on more
     // than one component of the vector. Simple element mapping will not suffice.
+    // --------------------------------------------------------------------------
     public static Activation Softmax = new Activation("Softmax") {
         @Override
         public Vec fn(Vec in) {
             double[] data = in.getData();
             double sum = 0;
-            double max = in.max();
+            double max = in.max();    // Trick: translate the input by largest element to avoid overflow.
             for (double a : data)
                 sum += exp(a - max);
 
@@ -99,11 +99,10 @@ public class Activation {
         }
 
         @Override
-        public Vec dEdI(Vec out, Vec dEdO) {
-            double x = out.elementProduct(dEdO).sumElements();
-            Vec sub = dEdO.sub(x);
-            Vec dEdI = out.elementProduct(sub);
-            return dEdI;
+        public Vec dCdI(Vec out, Vec dCdO) {
+            double x = out.elementProduct(dCdO).sumElements();
+            Vec sub = dCdO.sub(x);
+            return out.elementProduct(sub);
         }
     };
 

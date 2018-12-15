@@ -23,6 +23,18 @@ public class MatrixTest {
     }
 
     @Test
+    public void test_multiply() {
+        Vec v = new Vec(1, 2);  // 1x2
+        Matrix m = new Matrix(new double[][]{{2, 1, 3}, {3, 4, -1}});  // 2x3
+        Vec res = v.mul(m);
+
+        assertEquals(res.dimension(), 3);
+        assertEquals(res.getData()[0], 8, 0.001);
+        assertEquals(res.getData()[1], 9, 0.001);
+        assertEquals(res.getData()[2], 1, 0.001);
+    }
+
+    @Test
     public void testMap() {
         Matrix W = new Matrix(new double[][]{{2, 3, 4}, {3, 4, 5}});
         W = W.map(value -> 1);

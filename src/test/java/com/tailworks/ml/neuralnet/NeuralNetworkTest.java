@@ -1,6 +1,7 @@
 package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Vec;
+import com.tailworks.ml.neuralnet.optimizer.GradientDescent;
 import org.junit.Test;
 
 import static com.tailworks.ml.neuralnet.Activation.*;
@@ -10,6 +11,42 @@ import static org.junit.Assert.*;
 public class NeuralNetworkTest {
 
     private static final double EPS = 0.00001;
+
+
+    @Test
+    public void testFFExampleFromBlog() {
+        double[][][] initWeights = {
+                {{0.3, 0.2}, {-.4, 0.6}},
+                {{0.7, -.3}, {0.5, -.1}}
+        };
+
+        NeuralNetwork network =
+                new NeuralNetwork.Builder(2)
+                        .addLayer(new Layer(2, Sigmoid, new Vec(0.25, 0.45)))
+                        .addLayer(new Layer(2, Sigmoid, new Vec(0.15, 0.35)))
+                        .setCostFunction(new CostFunction.Quadratic())
+                        .setOptimizer(new GradientDescent(0.1))
+                        .initWeights((weights, layer) -> {
+                            double[][] data = weights.getData();
+                            for (int row = 0; row < data.length; row++)
+                                arraycopy(initWeights[layer][row], 0, data[row], 0, data[0].length);
+                        })
+                        .create();
+
+        Vec out = network.evaluate(new Vec(2, 3), new Vec(1, 0.2)).getOutput();
+
+        double[] data = out.getData();
+        assertEquals(0.712257432295742, data[0], EPS);
+        assertEquals(0.533097573871501, data[1], EPS);
+
+        network.updateFromLearning();
+
+        Result result = network.evaluate(new Vec(2, 3), new Vec(1, 0.2));
+        out = result.getOutput();
+        data = out.getData();
+        assertEquals(0.7187729999291985, data[0], EPS);
+        assertEquals(0.5238074518609882, data[1], EPS);
+    }
 
     @Test
     public void testEvaluate() {
@@ -55,8 +92,8 @@ public class NeuralNetworkTest {
                 new NeuralNetwork.Builder(2)
                         .addLayer(new Layer(2, Sigmoid, new Vec(0.35, 0.35)))
                         .addLayer(new Layer(2, Sigmoid, new Vec(0.60, 0.60)))
-                        .setCostFunction(new CostFunction.L2Half())
-                        .setLearningRate(0.5)
+                        .setCostFunction(new CostFunction.HalfQuadratic())
+                        .setOptimizer(new GradientDescent(0.5))
                         .initWeights((weights, layer) -> {
                             double[][] data = weights.getData();
                             for (int row = 0; row < data.length; row++)
@@ -65,10 +102,10 @@ public class NeuralNetworkTest {
                         .create();
 
 
-        Vec wanted = new Vec(0.01, 0.99);
+        Vec expected = new Vec(0.01, 0.99);
         Vec input = new Vec(0.05, 0.1);
 
-        Result result = network.evaluate(input, wanted);
+        Result result = network.evaluate(input, expected);
 
         Vec out = result.getOutput();
 
@@ -78,7 +115,7 @@ public class NeuralNetworkTest {
 
         network.updateFromLearning();
 
-        result = network.evaluate(input, wanted);
+        result = network.evaluate(input, expected);
         out = result.getOutput();
 
         assertEquals(0.28047144, result.getCost(), EPS);
@@ -87,7 +124,7 @@ public class NeuralNetworkTest {
 
         for (int i = 0; i < 10000 - 2; i++) {
             network.updateFromLearning();
-            result = network.evaluate(input, wanted);
+            result = network.evaluate(input, expected);
         }
 
         out = result.getOutput();
@@ -103,8 +140,8 @@ public class NeuralNetworkTest {
                 new NeuralNetwork.Builder(4)
                         .addLayer(new Layer(6, Sigmoid, 0.5))
                         .addLayer(new Layer(14, Sigmoid, 0.5))
-                        .setCostFunction(new CostFunction.L2())
-                        .setLearningRate(1)
+                        .setCostFunction(new CostFunction.Quadratic())
+                        .setOptimizer(new GradientDescent(1))
                         .initWeights(new Initializer.XavierNormal())
                         .create();
 

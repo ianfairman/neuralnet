@@ -5,7 +5,7 @@ import com.tailworks.ml.neuralnet.math.Vec;
 /**
  * The outcome of an evaluation.
  * Will always contain the output data.
- * Might contain the cost.
+ * Might contain the cost.  // Fixme: Optional?
  */
 public class Result {
 

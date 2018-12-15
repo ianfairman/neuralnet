@@ -2,16 +2,18 @@ package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Vec;
 
-// FIXME harmonise w Activation
 public interface CostFunction {
 
     String getName();
-    double getTotal(Vec wanted, Vec actual);
-    Vec getDerivative(Vec wanted, Vec actual);
+    double getTotal(Vec expected, Vec actual);
+    Vec getDerivative(Vec expected, Vec actual);
+
 
     // --------------------------------------------------------------
 
-    // 1/N * ∑(L−E)^2
+    /**
+     * Cost function: Mean square error, C = 1/n * ∑(y−exp)^2
+     */
     class MSE implements CostFunction {
         @Override
         public String getName() {
@@ -19,52 +21,56 @@ public interface CostFunction {
         }
 
         @Override
-        public double getTotal(Vec wanted, Vec actual) {
-            Vec diff = wanted.sub(actual);
+        public double getTotal(Vec expected, Vec actual) {
+            Vec diff = expected.sub(actual);
             return diff.dot(diff) / actual.dimension();
         }
 
         @Override
-        public Vec getDerivative(Vec wanted, Vec actual) {
-            return actual.sub(wanted).mul(2.0 / actual.dimension());
+        public Vec getDerivative(Vec expected, Vec actual) {
+            return actual.sub(expected).mul(2.0 / actual.dimension());
         }
     }
 
-    // ∑(L−E)^2
-    class L2 implements CostFunction {
+    /**
+     * Cost function: Quadratic, C = ∑(y−exp)^2
+     */
+    class Quadratic implements CostFunction {
         @Override
         public String getName() {
-            return "L2";
+            return "Quadratic";
         }
 
         @Override
-        public double getTotal(Vec wanted, Vec actual) {
-            Vec diff = wanted.sub(actual);
+        public double getTotal(Vec expected, Vec actual) {
+            Vec diff = actual.sub(expected);
             return diff.dot(diff);
         }
 
         @Override
-        public Vec getDerivative(Vec wanted, Vec actual) {
-            return actual.sub(wanted).mul(2);
+        public Vec getDerivative(Vec expected, Vec actual) {
+            return actual.sub(expected).mul(2);
         }
     }
 
-    // 0.5 * ∑(L−E)^2
-    class L2Half implements CostFunction {
+    /**
+     * Cost function: Quadratic, C = 0.5 ∑(y−exp)^2
+     */
+    class HalfQuadratic implements CostFunction {
         @Override
         public String getName() {
-            return "L2Half";
+            return "HalfQuadratic";
         }
 
         @Override
-        public double getTotal(Vec wanted, Vec actual) {
-            Vec diff = wanted.sub(actual);
-            return diff.dot(diff)*0.5;
+        public double getTotal(Vec expected, Vec actual) {
+            Vec diff = expected.sub(actual);
+            return diff.dot(diff) * 0.5;
         }
 
         @Override
-        public Vec getDerivative(Vec wanted, Vec actual) {
-            return actual.sub(wanted);
+        public Vec getDerivative(Vec expected, Vec actual) {
+            return actual.sub(expected);
         }
     }
 

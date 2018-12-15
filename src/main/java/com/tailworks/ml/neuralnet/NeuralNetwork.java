@@ -5,6 +5,8 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
+import com.tailworks.ml.neuralnet.optimizer.GradientDescent;
+import com.tailworks.ml.neuralnet.optimizer.Optimizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +15,6 @@ import java.util.List;
 
 public class NeuralNetwork {
 
-    private final double learningRate;
     private final CostFunction costFunction;
     private List<Layer> layers = new ArrayList<>();
 
@@ -22,7 +23,6 @@ public class NeuralNetwork {
      * @param nb The config for the neural network
      */
     private NeuralNetwork(Builder nb) {
-        learningRate = nb.learningRate;
         costFunction = nb.costFunction;
 
         // Adding inputLayer
@@ -35,7 +35,8 @@ public class NeuralNetwork {
             Layer layer = nb.layers.get(i);
             Matrix w = new Matrix(precedingLayer.size(), layer.size());
             nb.initializer.initWeights(w, i);
-            layer.addWeights(w);    // Each layer contains the weights between preceding and itself
+            layer.setWeights(w);    // Each layer contains the weights between preceding layer and itself
+            layer.setOptimizer(nb.optimizer.copy());
             layer.setPrecedingLayer(precedingLayer);
             layers.add(layer);
 
@@ -55,18 +56,18 @@ public class NeuralNetwork {
 
     /**
      * Evaluates an input vector, returning the networks output.
-     * If <code>wanted</code> is specified the result will contain
+     * If <code>expected</code> is specified the result will contain
      * a cost and the network will gather some learning from this
      * operation.
      */
-    public Result evaluate(Vec input, Vec wanted) {
+    public Result evaluate(Vec input, Vec expected) {
         Vec signal = input;
         for (Layer layer : layers)
-            signal = layer.evaluate(signal).getOut();
+            signal = layer.evaluate(signal);
 
-        if (wanted != null) {
-            learnFrom(wanted);
-            double cost = costFunction.getTotal(wanted, signal);
+        if (expected != null) {
+            learnFrom(expected);
+            double cost = costFunction.getTotal(expected, signal);
             return new Result(signal, cost);
         }
 
@@ -75,36 +76,33 @@ public class NeuralNetwork {
 
 
     /**
-     * Will gather some learning based on the <code>wanted</code> vector
+     * Will gather some learning based on the <code>expected</code> vector
      * and how that differs to the actual output from the network. This
      * difference (or error) is backpropagated through the net. To make
      * it possible to use mini batches the learning is not immediately
      * realized - i.e. <code>learnFrom</code> does not alter any weights.
      * Use <code>updateFromLearning()</code> to do that.
      */
-    private void learnFrom(Vec wanted) {
-        // We'll start at the last layer
+    private void learnFrom(Vec expected) {
         Layer layer = getLastLayer();
 
         // The error is initially the derivative of cost-function.
-        Vec dEdO = costFunction.getDerivative(wanted, layer.getOut());
+        Vec dCdO = costFunction.getDerivative(expected, layer.getOut());
 
         // iterate backwards through the layers
         do {
-            Vec dEdI = layer.getActivation().dEdI(layer.getOut(), dEdO);
+            Vec dCdI = layer.getActivation().dCdI(layer.getOut(), dCdO);
+            Matrix dCdW = dCdI.outerProduct(layer.getPrecedingLayer().getOut());
+
+            // Store the deltas for weights and biases
+            layer.addDeltaWeightsAndBiases(dCdW, dCdI);
 
             // prepare error propagation and store for next iteration
-            dEdO = layer.getWeights().multiply(dEdI);
-
-            Matrix dEdW = dEdI.outerProduct(layer.getPrecedingLayer().getOut());
-
-            // Store the deltas per layer (i.e. the weight changes we want)
-            layer.addDeltaWeights(dEdW);
-            layer.addDeltaBias(dEdI);
+            dCdO = layer.getWeights().multiply(dCdI);
 
             layer = layer.getPrecedingLayer();
         }
-        while (layer.hasPrecedingLayer());      // Stop when we are at input layer
+        while (layer.hasPrecedingLayer());     // Stop when we are at input layer
     }
 
 
@@ -114,14 +112,13 @@ public class NeuralNetwork {
      * collected during evaluation & training.
      */
     public void updateFromLearning() {
-        for (Layer l : layers) {
-            if (!l.isInputLayer()) {
-                l.updateWeights(learningRate);
-                l.updateBias(learningRate);
-            }
-        }
+        for (Layer l : layers)
+            if (l.hasPrecedingLayer())         // Skip input layer
+                l.updateWeightsAndBias();
     }
 
+
+    // --------------------------------------------------------------------
 
 
     public List<Layer> getLayers() {
@@ -156,17 +153,12 @@ public class NeuralNetwork {
         private int networkInputSize;
 
         // defaults:
-        private double learningRate = 0.005;
         private Initializer initializer = new Initializer.Random(-0.5, 0.5);
-        private CostFunction costFunction = new CostFunction.MSE();
+        private CostFunction costFunction = new CostFunction.Quadratic();
+        private Optimizer optimizer = new GradientDescent(0.005);
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;
-        }
-
-        public Builder setLearningRate(double learningRate) {
-            this.learningRate = learningRate;
-            return this;
         }
 
         public Builder initWeights(Initializer initializer) {
@@ -176,6 +168,11 @@ public class NeuralNetwork {
 
         public Builder setCostFunction(CostFunction costFunction) {
             this.costFunction = costFunction;
+            return this;
+        }
+
+        public Builder setOptimizer(Optimizer optimizer) {
+            this.optimizer = optimizer;
             return this;
         }
 
@@ -195,12 +192,10 @@ public class NeuralNetwork {
     // -----------------------------
 
     public static class NetworkState {
-        double learningRate;
         String costFunction;
         Layer.LayerState[] layers;
 
         public NetworkState(NeuralNetwork network) {
-            learningRate = network.learningRate;
             costFunction = network.costFunction.getName();
 
             layers = new Layer.LayerState[network.layers.size()];

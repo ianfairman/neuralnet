@@ -6,12 +6,14 @@ import static org.junit.Assert.assertEquals;
 
 public class VecTest {
 
+    public static final double EPS = 0.000001;
+
     @Test
     public void dot() {
         Vec v = new Vec(1, 2, 3);
         Vec u = new Vec(3, -4, 5);
-        assertEquals(v.dot(u), 10, 0.01);
-        assertEquals(u.dot(v), 10, 0.01);
+        assertEquals(v.dot(u), 10, EPS);
+        assertEquals(u.dot(v), 10, EPS);
     }
 
 
@@ -24,11 +26,11 @@ public class VecTest {
         assertEquals(result.rows(), 6);
         assertEquals(result.cols(), 3);
 
-        assertEquals(result.getData()[0][0], 1, 0.001);
-        assertEquals(result.getData()[0][2], 3, 0.001);
-        assertEquals(result.getData()[2][0], 3, 0.001);
-        assertEquals(result.getData()[5][0], 6, 0.001);
-        assertEquals(result.getData()[5][2], 18, 0.001);
+        assertEquals(result.getData()[0][0], 1, EPS);
+        assertEquals(result.getData()[0][2], 3, EPS);
+        assertEquals(result.getData()[2][0], 3, EPS);
+        assertEquals(result.getData()[5][0], 6, EPS);
+        assertEquals(result.getData()[5][2], 18, EPS);
     }
 
     @Test
@@ -38,9 +40,9 @@ public class VecTest {
         Vec res = v.mul(m);
 
         assertEquals(res.dimension(), 3);
-        assertEquals(res.getData()[0], 8, 0.001);
-        assertEquals(res.getData()[1], 9, 0.001);
-        assertEquals(res.getData()[2], 1, 0.001);
+        assertEquals(res.getData()[0], 8, EPS);
+        assertEquals(res.getData()[1], 9, EPS);
+        assertEquals(res.getData()[2], 1, EPS);
     }
 
 
