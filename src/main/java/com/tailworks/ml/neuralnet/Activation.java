@@ -47,7 +47,7 @@ public class Activation {
     // --- A few predefined ones ------------------------------------------------
     // --------------------------------------------------------------------------
     // The simple properties of most activation functions as stated above makes
-    // it easy to create the majority of them by just providing lambdas for 
+    // it easy to create the majority of them by just providing lambdas for
     // fn and the diff dfn.
 
     public static Activation ReLU = new Activation(

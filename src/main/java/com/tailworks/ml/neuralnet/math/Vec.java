@@ -93,11 +93,10 @@ public class Vec {
     public Matrix outerProduct(Vec u) {
         double[][] result = new double[u.dimension()][dimension()];
 
-        for (int i = 0; i < data.length; i++) {
-            for (int j = 0; j < u.data.length; j++) {
+        for (int i = 0; i < data.length; i++)
+            for (int j = 0; j < u.data.length; j++)
                 result[j][i] = data[i] * u.data[j];
-            }
-        }
+
         return new Matrix(result);
     }
 

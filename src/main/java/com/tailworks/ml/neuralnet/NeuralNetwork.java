@@ -111,7 +111,7 @@ public class NeuralNetwork {
      * That is: Update the weights and biases based on the deltas
      * collected during evaluation & training.
      */
-    public void updateFromLearning() {
+    public synchronized void updateFromLearning() {
         for (Layer l : layers)
             if (l.hasPrecedingLayer())         // Skip input layer
                 l.updateWeightsAndBias();

@@ -54,7 +54,7 @@ public interface CostFunction {
     }
 
     /**
-     * Cost function: Quadratic, C = 0.5 ∑(y−exp)^2
+     * Cost function: HalfQuadratic, C = 0.5 ∑(y−exp)^2
      */
     class HalfQuadratic implements CostFunction {
         @Override
