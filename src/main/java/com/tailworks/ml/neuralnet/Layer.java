@@ -12,17 +12,18 @@ public class Layer {
 
     private final int size;
     private ThreadLocal<Vec> out = new ThreadLocal<>();
-    private Matrix weights;
-    private Vec bias;
-
     private Activation activation;
     private Optimizer optimizer;
+    private Matrix weights;
+    private Vec bias;
 
     private Layer precedingLayer;
 
     // Not yet realized changes to the weights and biases ("observed things not yet learned")
     private transient Matrix deltaWeights;
     private transient Vec deltaBias;
+    private transient int deltaWeightsAdded = 0;
+    private transient int deltaBiasAdded = 0;
 
 
     public Layer(int size, Activation activation) {
@@ -38,7 +39,7 @@ public class Layer {
 
     public Layer(int size, Activation activation, Vec bias) {
         this.size = size;
-        this.bias = bias.copy();
+        this.bias = bias;
         deltaBias = new Vec(size);
         this.activation = activation;
     }
@@ -101,20 +102,29 @@ public class Layer {
 
     /**
      * Add upcoming changes to the Weights and Biases.
-     * NOTE! This does not mean that the network is updated.
+     * This does not mean that the network is updated.
      */
     public synchronized void addDeltaWeightsAndBiases(Matrix dW, Vec dB) {
         deltaWeights.add(dW);
+        deltaWeightsAdded++;
         deltaBias = deltaBias.add(dB);
+        deltaBiasAdded++;
     }
 
     public synchronized void updateWeightsAndBias() {
-        // Update
-        optimizer.updateWeights(weights, deltaWeights);
-        bias = optimizer.updateBias(bias, deltaBias);
-        // Clear
-        deltaWeights.map(a -> 0);
-        deltaBias = deltaBias.map(a -> 0);
+        if (deltaWeightsAdded > 0) {
+            Matrix average_dW = deltaWeights.mul(1.0 / deltaWeightsAdded);
+            optimizer.updateWeights(weights, average_dW);
+            deltaWeights.map(a -> 0);   // Clear
+            deltaWeightsAdded = 0;
+        }
+
+        if (deltaBiasAdded > 0) {
+            Vec average_bias = deltaBias.mul(1.0 / deltaBiasAdded);
+            bias = optimizer.updateBias(bias, average_bias);
+            deltaBias = deltaBias.map(a -> 0);  // Clear
+            deltaBiasAdded = 0;
+        }
     }
 
 

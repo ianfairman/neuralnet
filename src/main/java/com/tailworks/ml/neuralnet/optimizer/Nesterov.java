@@ -5,50 +5,52 @@ import com.tailworks.ml.neuralnet.math.Vec;
 
 /**
  * Updates Weights and biases based on:
- * v_t = γ * v_t-1 + η * dC/dW
- * W -= v_t
+ * v_t-1 = v
+ * v = γ * v - η * dC/dW
+ * W += -γ * v_t-1 + (1 + γ) * v
  * <p>
  * γ is the momentum (i.e. how much of the last gradient will we use again)
  * η is the learning rate
+ * <p>
  */
-public class Momentum implements Optimizer {
+public class Nesterov implements Optimizer {
 
     private double learningRate;
     private double momentum;
     private Matrix lastDW;
     private Vec lastDBias;
 
-    public Momentum(double learningRate, double momentum) {
+    public Nesterov(double learningRate, double momentum) {
         this.learningRate = learningRate;
         this.momentum = momentum;
     }
 
-    public Momentum(double learningRate) {
+    public Nesterov(double learningRate) {
         this(learningRate, 0.9);
     }
 
     @Override
     public void updateWeights(Matrix weights, Matrix dCdW) {
         if (lastDW == null) {
-            lastDW = dCdW.copy().mul(learningRate);
-        } else {
-            lastDW.mul(momentum).add(dCdW.copy().mul(learningRate));
+            lastDW = new Matrix(dCdW.rows(), dCdW.cols());
         }
-        weights.sub(lastDW);
+        Matrix lastDWCopy = lastDW.copy();
+        lastDW.mul(momentum).sub(dCdW.mul(learningRate));
+        weights.add(lastDWCopy.mul(momentum).add(lastDW.copy().mul(1 + momentum)));
     }
 
     @Override
     public Vec updateBias(Vec bias, Vec dCdB) {
         if (lastDBias == null) {
-            lastDBias = dCdB.mul(learningRate);
-        } else {
-            lastDBias = lastDBias.mul(momentum ).add(dCdB.mul(learningRate));
+            lastDBias = new Vec(dCdB.dimension());
         }
-        return bias.sub(lastDBias);
+        Vec lastDBiasCopy = lastDBias;
+        lastDBias = lastDBias.mul(momentum).sub(dCdB.mul(learningRate));
+        return bias.add(lastDBiasCopy.mul(-momentum).add(lastDBias.mul(1 + momentum)));
     }
 
     @Override
     public Optimizer copy() {
-        return new Momentum(learningRate, momentum);
+        return new Nesterov(learningRate, momentum);
     }
 }

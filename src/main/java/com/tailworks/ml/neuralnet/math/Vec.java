@@ -111,10 +111,6 @@ public class Vec {
         return new Vec(result);
     }
 
-    public Vec copy() {
-        return new Vec(data);
-    }
-
     public Vec add(Vec u) {
         assertCorrectDimension(u.dimension());
 

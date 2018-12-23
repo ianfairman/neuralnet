@@ -91,5 +91,14 @@ public class Matrix {
         if (rows != other.rows || cols != other.cols)
             throw new IllegalArgumentException(format("Matrix of different dim: Input is %d x %d, Vec is %d x %d", rows, cols, other.rows, other.cols));
     }
+
+    public Matrix copy() {
+        Matrix m = new Matrix(rows, cols);
+        for (int y = 0; y < rows; y++)
+            if (cols >= 0) System.arraycopy(data[y], 0, m.data[y], 0, cols);
+
+        return m;
+    }
+
 }
 
