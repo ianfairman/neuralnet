@@ -5,8 +5,8 @@ import com.tailworks.ml.neuralnet.math.Vec;
 
 /**
  * Updates Weights and biases based on:
- * v_t = γ * v_t-1 + η * dC/dW
- * W -= v_t
+ * v = γ * v_prev + η * dC/dW
+ * W -= v
  * <p>
  * γ is the momentum (i.e. how much of the last gradient will we use again)
  * η is the learning rate

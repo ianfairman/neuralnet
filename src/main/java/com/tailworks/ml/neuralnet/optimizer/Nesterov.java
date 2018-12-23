@@ -5,9 +5,9 @@ import com.tailworks.ml.neuralnet.math.Vec;
 
 /**
  * Updates Weights and biases based on:
- * v_t-1 = v
+ * v_prev = v
  * v = γ * v - η * dC/dW
- * W += -γ * v_t-1 + (1 + γ) * v
+ * W += -γ * v_prev + (1 + γ) * v
  * <p>
  * γ is the momentum (i.e. how much of the last gradient will we use again)
  * η is the learning rate
@@ -36,7 +36,7 @@ public class Nesterov implements Optimizer {
         }
         Matrix lastDWCopy = lastDW.copy();
         lastDW.mul(momentum).sub(dCdW.mul(learningRate));
-        weights.add(lastDWCopy.mul(momentum).add(lastDW.copy().mul(1 + momentum)));
+        weights.add(lastDWCopy.mul(-momentum).add(lastDW.copy().mul(1 + momentum)));
     }
 
     @Override
