@@ -16,7 +16,6 @@ import java.util.List;
 public class NeuralNetwork {
 
     private final CostFunction costFunction;
-    private final double l2;
 
     private List<Layer> layers = new ArrayList<>();
 
@@ -27,7 +26,6 @@ public class NeuralNetwork {
      */
     private NeuralNetwork(Builder nb) {
         costFunction = nb.costFunction;
-        l2 = nb.l2;
 
         // Adding inputLayer
         Layer inputLayer = new Layer(nb.networkInputSize, Activation.Identity);
@@ -41,6 +39,7 @@ public class NeuralNetwork {
             nb.initializer.initWeights(w, i);
             layer.setWeights(w);    // Each layer contains the weights between preceding layer and itself
             layer.setOptimizer(nb.optimizer.copy());
+            layer.setL2(nb.l2);
             layer.setPrecedingLayer(precedingLayer);
             layers.add(layer);
 
@@ -117,11 +116,9 @@ public class NeuralNetwork {
      */
     public synchronized void updateFromLearning() {
         for (Layer l : layers)
-            if (l.hasPrecedingLayer()) {        // Skip input layer
-                if (l2 > 0)
-                    l.regularize(l2);
+            if (l.hasPrecedingLayer())         // Skip input layer
                 l.updateWeightsAndBias();
-            }
+
     }
 
 

@@ -24,6 +24,7 @@ public class Layer {
     private transient Vec deltaBias;
     private transient int deltaWeightsAdded = 0;
     private transient int deltaBiasAdded = 0;
+    private double l2 = 0;
 
 
     public Layer(int size, Activation activation) {
@@ -81,6 +82,10 @@ public class Layer {
         this.optimizer = optimizer;
     }
 
+    public void setL2(double l2) {
+        this.l2 = l2;
+    }
+
     public Matrix getWeights() {
         return weights;
     }
@@ -112,8 +117,17 @@ public class Layer {
         deltaBiasAdded++;
     }
 
+    /**
+     * Takes an average of all added Weights and Biases and tell the
+     * optimizer to apply them to the current weights and biases.
+     *
+     * Also applies L2 regularization on the weights if used.
+     */
     public synchronized void updateWeightsAndBias() {
         if (deltaWeightsAdded > 0) {
+            if (l2 > 0)
+                weights.map(value -> value - l2 * value);
+
             Matrix average_dW = deltaWeights.mul(1.0 / deltaWeightsAdded);
             optimizer.updateWeights(weights, average_dW);
             deltaWeights.map(a -> 0);   // Clear
@@ -128,9 +142,6 @@ public class Layer {
         }
     }
 
-    public synchronized void regularize(double l2) {
-        weights.map(value -> value - l2 * value);
-    }
 
 
     // ------------------------------------------------------------------
