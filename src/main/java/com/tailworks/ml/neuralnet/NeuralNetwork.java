@@ -16,14 +16,18 @@ import java.util.List;
 public class NeuralNetwork {
 
     private final CostFunction costFunction;
+    private final double l2;
+
     private List<Layer> layers = new ArrayList<>();
 
     /**
      * Creates a neural network given the configuration set in the builder
+     *
      * @param nb The config for the neural network
      */
     private NeuralNetwork(Builder nb) {
         costFunction = nb.costFunction;
+        l2 = nb.l2;
 
         // Adding inputLayer
         Layer inputLayer = new Layer(nb.networkInputSize, Activation.Identity);
@@ -113,8 +117,11 @@ public class NeuralNetwork {
      */
     public synchronized void updateFromLearning() {
         for (Layer l : layers)
-            if (l.hasPrecedingLayer())         // Skip input layer
+            if (l.hasPrecedingLayer()) {        // Skip input layer
+                if (l2 > 0)
+                    l.regularize(l2);
                 l.updateWeightsAndBias();
+            }
     }
 
 
@@ -156,6 +163,7 @@ public class NeuralNetwork {
         private Initializer initializer = new Initializer.Random(-0.5, 0.5);
         private CostFunction costFunction = new CostFunction.Quadratic();
         private Optimizer optimizer = new GradientDescent(0.005);
+        private double l2 = 0;
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;
@@ -173,6 +181,11 @@ public class NeuralNetwork {
 
         public Builder setOptimizer(Optimizer optimizer) {
             this.optimizer = optimizer;
+            return this;
+        }
+
+        public Builder l2(double l2) {
+            this.l2 = l2;
             return this;
         }
 

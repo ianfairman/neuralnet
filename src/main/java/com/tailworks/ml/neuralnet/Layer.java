@@ -51,6 +51,7 @@ public class Layer {
     /**
      * Feed the in-vector, i, through this layer.
      * Stores a copy of the out vector.
+     *
      * @param i The input vector
      * @return The out vector o (i.e. the result of o = iW + b)
      */
@@ -125,6 +126,10 @@ public class Layer {
             deltaBias = deltaBias.map(a -> 0);  // Clear
             deltaBiasAdded = 0;
         }
+    }
+
+    public synchronized void regularize(double l2) {
+        weights.map(value -> value - l2 * value);
     }
 
 
