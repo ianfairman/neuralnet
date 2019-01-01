@@ -42,7 +42,7 @@ public class Momentum implements Optimizer {
         if (lastDBias == null) {
             lastDBias = dCdB.mul(learningRate);
         } else {
-            lastDBias = lastDBias.mul(momentum ).add(dCdB.mul(learningRate));
+            lastDBias = lastDBias.mul(momentum).add(dCdB.mul(learningRate));
         }
         return bias.sub(lastDBias);
     }

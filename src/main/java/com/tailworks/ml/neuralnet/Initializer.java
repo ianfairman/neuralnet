@@ -2,6 +2,8 @@ package com.tailworks.ml.neuralnet;
 
 import com.tailworks.ml.neuralnet.math.Matrix;
 
+import static com.tailworks.ml.neuralnet.math.SharedRnd.getRnd;
+
 public interface Initializer {
 
     void initWeights(Matrix weights, int layer);
@@ -11,8 +13,6 @@ public interface Initializer {
     // --- A few predefined ones ---------------------------------------
     // -----------------------------------------------------------------
     class Random implements Initializer {
-
-        java.util.Random rnd = new java.util.Random(1);
 
         private double min;
         private double max;
@@ -25,68 +25,56 @@ public interface Initializer {
         @Override
         public void initWeights(Matrix weights, int layer) {
             double delta = max - min;
-            weights.map(value -> min + rnd.nextDouble() * delta);
+            weights.map(value -> min + getRnd().nextDouble() * delta);
         }
     }
 
 
     class XavierUniform implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = 2.0 * Math.sqrt(6.0 / (weights.cols() + weights.rows()));
-            weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
+            weights.map(value -> (getRnd().nextDouble() - 0.5) * factor);
         }
     }
 
     class XavierNormal implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = Math.sqrt(2.0 / (weights.cols() + weights.rows()));
-            weights.map(value -> rnd.nextGaussian() * factor);
+            weights.map(value -> getRnd().nextGaussian() * factor);
         }
     }
 
     class LeCunUniform implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = 2.0 * Math.sqrt(3.0 / weights.cols());
-            weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
+            weights.map(value -> (getRnd().nextDouble() - 0.5) * factor);
         }
     }
 
     class LeCunNormal implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = 1.0 / Math.sqrt(weights.cols());
-            weights.map(value -> rnd.nextGaussian() * factor);
+            weights.map(value -> getRnd().nextGaussian() * factor);
         }
     }
 
     class HeUniform implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = 2.0 * Math.sqrt(6.0 / weights.cols());
-            weights.map(value -> (rnd.nextDouble() - 0.5) * factor);
+            weights.map(value -> (getRnd().nextDouble() - 0.5) * factor);
         }
     }
 
     class HeNormal implements Initializer {
-        java.util.Random rnd = new java.util.Random(1);
-
         @Override
         public void initWeights(Matrix weights, int layer) {
             final double factor = Math.sqrt(2.0 / weights.cols());
-            weights.map(value -> rnd.nextGaussian() * factor);
+            weights.map(value -> getRnd().nextGaussian() * factor);
         }
     }
 

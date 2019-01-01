@@ -192,9 +192,7 @@ public class NeuralNetwork {
         }
 
         public NeuralNetwork create() {
-            NeuralNetwork network = new NeuralNetwork(this);
-            log.info("Created NeuralNetwork: " + network.toJson(false).substring(0, 200) + " ...");
-            return network;
+            return new NeuralNetwork(this);
         }
 
     }
