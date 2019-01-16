@@ -1,8 +1,6 @@
 package com.tailworks.ml.neuralnet;
 
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializer;
 import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
 import com.tailworks.ml.neuralnet.optimizer.GradientDescent;
@@ -130,11 +128,7 @@ public class NeuralNetwork {
     }
 
     public String toJson(boolean pretty) {
-        GsonBuilder gsonBuilder = new GsonBuilder()
-                .registerTypeAdapter(Double.class,
-                        (JsonSerializer<Double>) (src, typeOfSrc, context) ->
-                                new JsonPrimitive(src.floatValue())
-                );
+        GsonBuilder gsonBuilder = new GsonBuilder();
         if (pretty) gsonBuilder.setPrettyPrinting();
         return gsonBuilder.create().toJson(new NetworkState(this));
     }
