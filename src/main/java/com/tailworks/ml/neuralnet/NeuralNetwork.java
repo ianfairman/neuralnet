@@ -5,8 +5,6 @@ import com.tailworks.ml.neuralnet.math.Matrix;
 import com.tailworks.ml.neuralnet.math.Vec;
 import com.tailworks.ml.neuralnet.optimizer.GradientDescent;
 import com.tailworks.ml.neuralnet.optimizer.Optimizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,7 +85,7 @@ public class NeuralNetwork {
     private void learnFrom(Vec expected) {
         Layer layer = getLastLayer();
 
-        // The error is initially the derivative of cost-function.
+        // The error is initially the derivative of the cost-function.
         Vec dCdO = costFunction.getDerivative(expected, layer.getOut());
 
         // iterate backwards through the layers
@@ -145,7 +143,6 @@ public class NeuralNetwork {
      * Simple builder for a NeuralNetwork
      */
     public static class Builder {
-        private static Logger log = LoggerFactory.getLogger(Builder.class);
 
         private List<Layer> layers = new ArrayList<>();
         private int networkInputSize;
