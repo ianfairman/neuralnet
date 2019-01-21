@@ -16,6 +16,7 @@ public class Layer {
     private Optimizer optimizer;
     private Matrix weights;
     private Vec bias;
+    private double l2 = 0;
 
     private Layer precedingLayer;
 
@@ -24,8 +25,6 @@ public class Layer {
     private transient Vec deltaBias;
     private transient int deltaWeightsAdded = 0;
     private transient int deltaBiasAdded = 0;
-    private double l2 = 0;
-
 
     public Layer(int size, Activation activation) {
         this(size, activation, 0);
@@ -141,7 +140,6 @@ public class Layer {
             deltaBiasAdded = 0;
         }
     }
-
 
 
     // ------------------------------------------------------------------
