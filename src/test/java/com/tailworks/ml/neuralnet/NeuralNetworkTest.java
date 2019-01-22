@@ -146,7 +146,7 @@ public class NeuralNetworkTest {
                         .create();
 
 
-        int trainInputs[][] = new int[][]{
+        int[][] trainInputs = new int[][]{
                 {1, 1, 1, 0},
                 {1, 1, 0, 0},
                 {0, 1, 1, 0},
@@ -163,7 +163,7 @@ public class NeuralNetworkTest {
                 {0, 0, 1, 1}
         };
 
-        int trainOutput[][] = new int[][]{
+        int[][] trainOutput = new int[][]{
                 {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -194,6 +194,56 @@ public class NeuralNetworkTest {
             Result result = network.evaluate(new Vec(trainInputs[i]));
             int ix = result.getOutput().indexOfLargestElement();
             assertEquals(new Vec(trainOutput[i]), new Vec(trainOutput[ix]));
+        }
+    }
+
+    @Test
+    public void testMakeACopyOfNetwork() {
+
+        NeuralNetwork network1 =
+                new NeuralNetwork.Builder(4)
+                        .addLayer(new Layer(6, Sigmoid, 0.5))
+                        .addLayer(new Layer(14, Sigmoid, 0.5))
+                        .setCostFunction(new CostFunction.Quadratic())
+                        .setOptimizer(new GradientDescent(1))
+                        .initWeights(new Initializer.XavierNormal())
+                        .create();
+
+        NeuralNetwork network2 = new NeuralNetwork.Builder(network1).create();
+
+        int[][] trainInputs = new int[][]{
+                {1, 1, 1, 0},
+                {1, 1, 0, 0},
+                {0, 1, 1, 0},
+                {1, 0, 1, 0},
+        };
+
+        int[][] trainOutput = new int[][]{
+                {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        };
+
+
+        int cnt = 0;
+        for (int i = 0; i < 1100; i++) {
+            Vec input = new Vec(trainInputs[cnt]);
+            Vec expected = new Vec(trainOutput[cnt]);
+            network1.evaluate(input, expected);
+            network1.updateFromLearning();
+            network2.evaluate(input, expected);
+            network2.updateFromLearning();
+            cnt = (cnt + 1) % trainInputs.length;
+        }
+
+        for (int[] trainInput : trainInputs) {
+            Vec input = new Vec(trainInput);
+            Result result1 = network1.evaluate(input);
+            Result result2 = network2.evaluate(input);
+            Vec out1 = result1.getOutput();
+            Vec out2 = result2.getOutput();
+            assertEquals(out1, out2);
         }
     }
 
