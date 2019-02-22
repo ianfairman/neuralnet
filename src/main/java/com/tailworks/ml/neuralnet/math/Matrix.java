@@ -76,6 +76,15 @@ public class Matrix {
         return this;
     }
 
+    public Matrix fillFrom(Matrix other) {
+        assertCorrectDimension(other);
+
+        for (int y = 0; y < rows; y++)
+            if (cols >= 0) System.arraycopy(other.data[y], 0, data[y], 0, cols);
+
+        return this;
+    }
+
     public double average() {
         return stream(data).flatMapToDouble(Arrays::stream).average().getAsDouble();
     }

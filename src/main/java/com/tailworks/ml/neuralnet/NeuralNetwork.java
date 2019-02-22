@@ -12,6 +12,9 @@ import java.util.List;
 public class NeuralNetwork {
 
     private final CostFunction costFunction;
+    private final int networkInputSize;
+    private final double l2;
+    private final Optimizer optimizer;
 
     private List<Layer> layers = new ArrayList<>();
 
@@ -22,9 +25,13 @@ public class NeuralNetwork {
      */
     private NeuralNetwork(Builder nb) {
         costFunction = nb.costFunction;
+        networkInputSize = nb.networkInputSize;
+        optimizer = nb.optimizer;
+        l2 = nb.l2;
 
         // Adding inputLayer
-        Layer inputLayer = new Layer(nb.networkInputSize, Activation.Identity);
+
+        Layer inputLayer = new Layer(networkInputSize, Activation.Identity);
         layers.add(inputLayer);
 
         Layer precedingLayer = inputLayer;
@@ -34,8 +41,8 @@ public class NeuralNetwork {
             Matrix w = new Matrix(precedingLayer.size(), layer.size());
             nb.initializer.initWeights(w, i);
             layer.setWeights(w);    // Each layer contains the weights between preceding layer and itself
-            layer.setOptimizer(nb.optimizer.copy());
-            layer.setL2(nb.l2);
+            layer.setOptimizer(optimizer.copy());
+            layer.setL2(l2);
             layer.setPrecedingLayer(precedingLayer);
             layers.add(layer);
 
@@ -117,7 +124,6 @@ public class NeuralNetwork {
 
     }
 
-
     // --------------------------------------------------------------------
 
 
@@ -155,6 +161,35 @@ public class NeuralNetwork {
 
         public Builder(int networkInputSize) {
             this.networkInputSize = networkInputSize;
+        }
+
+        /**
+         * Create a builder from an existing neural network, hence making
+         * it possible to do a copy of the entire state and modify as needed.
+         */
+        public Builder(NeuralNetwork other) {
+            networkInputSize = other.networkInputSize;
+            costFunction = other.costFunction;
+            optimizer = other.optimizer;
+            l2 = other.l2;
+
+            List<Layer> otherLayers = other.getLayers();
+            for (int i = 1; i < otherLayers.size(); i++) {
+                Layer otherLayer = otherLayers.get(i);
+                layers.add(
+                        new Layer(
+                                otherLayer.size(),
+                                otherLayer.getActivation(),
+                                otherLayer.getBias()
+                        )
+                );
+            }
+
+            initializer = (weights, layer) -> {
+                Layer otherLayer = otherLayers.get(layer + 1);
+                Matrix otherLayerWeights = otherLayer.getWeights();
+                weights.fillFrom(otherLayerWeights);
+            };
         }
 
         public Builder initWeights(Initializer initializer) {
